@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EnterpriseCRM.API/EnterpriseCRM.API.csproj" />
+    <Project Path="src/EnterpriseCRM.Application/EnterpriseCRM.Application.csproj" />
+    <Project Path="src/EnterpriseCRM.Domain/EnterpriseCRM.Domain.csproj" />
+    <Project Path="src/EnterpriseCRM.Infrastructure/EnterpriseCRM.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EnterpriseCRM.IntegrationTests/EnterpriseCRM.IntegrationTests.csproj" />
+    <Project Path="tests/EnterpriseCRM.UnitTests/EnterpriseCRM.UnitTests.csproj" />
+  </Folder>
+</Solution>

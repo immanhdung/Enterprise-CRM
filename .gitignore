@@ -1,0 +1,41 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# .NET / Visual Studio / Rider
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+*.DotSettings.user
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.local.json
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+*.local
+.env
+.env.local
+.env.production
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Database & Credentials
+*.secret
+*.key
+*.pem
+supabase/.temp/
+database/backups/
+
+# Logs
+logs/
+*.log
