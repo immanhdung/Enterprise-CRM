@@ -7,6 +7,19 @@ import { LoginPage } from '@/features/auth/LoginPage';
 import { ForbiddenPage } from '@/features/auth/ForbiddenPage';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 
+// Phase 3 Core CRM Pages
+import { LeadsPage } from '@/features/leads/LeadsPage';
+import { LeadDetailPage } from '@/features/leads/LeadDetailPage';
+import { AccountsPage } from '@/features/accounts/AccountsPage';
+import { AccountDetailPage } from '@/features/accounts/AccountDetailPage';
+import { ContactsPage } from '@/features/contacts/ContactsPage';
+import { DealsPage } from '@/features/deals/DealsPage';
+import { DealDetailPage } from '@/features/deals/DealDetailPage';
+import { PipelineKanbanPage } from '@/features/deals/PipelineKanbanPage';
+import { TasksPage } from '@/features/tasks/TasksPage';
+import { AppointmentsPage } from '@/features/appointments/AppointmentsPage';
+import { ActivitiesPage } from '@/features/activities/ActivitiesPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -28,62 +41,31 @@ export function App() {
 
           {/* Protected Organization Routes */}
           <Route element={<ProtectedRoute />}>
-            <Route
-              element={
-                <AppShell />
-              }
-            >
+            <Route element={<AppShell />}>
               <Route path="/" element={<DashboardPage />} />
-              <Route
-                path="/leads"
-                element={
-                  <FeaturePlaceholder
-                    title="Lead Management"
-                    description="Omnichannel capture (Facebook, Google, TikTok Ads), automatic round-robin assignment, duplicate detection and conversion pipeline."
-                    phase="Phase 3 (Core CRM)"
-                  />
-                }
-              />
-              <Route
-                path="/accounts"
-                element={
-                  <FeaturePlaceholder
-                    title="Customer Accounts"
-                    description="360-degree customer profile, corporate tax registry, segmentation, and full transaction history."
-                    phase="Phase 3 (Core CRM)"
-                  />
-                }
-              />
-              <Route
-                path="/contacts"
-                element={
-                  <FeaturePlaceholder
-                    title="Contact Registry"
-                    description="Individual decision-makers, direct phone numbers, email logs, and account associations."
-                    phase="Phase 3 (Core CRM)"
-                  />
-                }
-              />
-              <Route
-                path="/deals"
-                element={
-                  <FeaturePlaceholder
-                    title="Sales Pipeline (Kanban)"
-                    description="Drag-and-drop opportunity tracking, win probabilities, stage customization, and expected revenue forecast."
-                    phase="Phase 3 (Core CRM)"
-                  />
-                }
-              />
-              <Route
-                path="/activities"
-                element={
-                  <FeaturePlaceholder
-                    title="Activities, Tasks & Appointments"
-                    description="Task scheduler, calendar synchronization, follow-up reminders, and overdue alerts."
-                    phase="Phase 3 (Core CRM)"
-                  />
-                }
-              />
+
+              {/* Module A – Lead Management */}
+              <Route path="/leads" element={<LeadsPage />} />
+              <Route path="/leads/:id" element={<LeadDetailPage />} />
+
+              {/* Module B – Account Management */}
+              <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/accounts/:id" element={<AccountDetailPage />} />
+
+              {/* Module C – Contact Management */}
+              <Route path="/contacts" element={<ContactsPage />} />
+
+              {/* Module D – Deal & Pipeline Kanban Management */}
+              <Route path="/pipeline" element={<PipelineKanbanPage />} />
+              <Route path="/deals" element={<DealsPage />} />
+              <Route path="/deals/:id" element={<DealDetailPage />} />
+
+              {/* Module E – Tasks, Activities & Appointments */}
+              <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/appointments" element={<AppointmentsPage />} />
+              <Route path="/activities" element={<ActivitiesPage />} />
+
+              {/* Future Phases Placeholders */}
               <Route
                 path="/quotations"
                 element={

@@ -1,6 +1,7 @@
 using EnterpriseCRM.Application.Common.Interfaces;
 using EnterpriseCRM.Domain.Constants;
 using EnterpriseCRM.Domain.Entities;
+using EnterpriseCRM.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -320,6 +321,307 @@ public static class DatabaseSeeder
                 };
                 context.LeadSources.AddRange(sources);
                 await context.SaveChangesAsync();
+            }
+
+            // 9. Seed Sample CRM Records (Leads, Accounts, Contacts, Deals, Tasks, Appointments)
+            if (!await context.Leads.AnyAsync())
+            {
+                var salesEmp = await context.Employees.Include(e => e.User).FirstOrDefaultAsync(e => e.User.Email == "sales@enterprisecrm.local");
+                var googleSource = await context.LeadSources.FirstOrDefaultAsync(s => s.Name == "Google Search Ads");
+                var linkedinSource = await context.LeadSources.FirstOrDefaultAsync(s => s.Name == "LinkedIn Enterprise");
+                var referralSource = await context.LeadSources.FirstOrDefaultAsync(s => s.Name == "Partner / Client Referral");
+
+                var sampleLeads = new[]
+                {
+                    new Lead
+                    {
+                        Id = Guid.NewGuid(),
+                        FirstName = "Jonathan",
+                        LastName = "Hayes",
+                        CompanyName = "Vanguard Innovations",
+                        JobTitle = "VP of Digital Transformation",
+                        Phone = "+1 (555) 234-8901",
+                        Email = "j.hayes@vanguard-innovations.io",
+                        EstimatedBudget = 45000m,
+                        Status = LeadStatus.New,
+                        Score = 85,
+                        IsKeyAccount = true,
+                        Priority = "High",
+                        Campaign = "Q4 Enterprise Cloud",
+                        NextFollowUpDate = DateTime.UtcNow.AddDays(2),
+                        Description = "Looking for multi-cloud migration architecture and 24/7 managed support.",
+                        SourceId = linkedinSource?.Id,
+                        AssignedEmployeeId = salesEmp?.Id
+                    },
+                    new Lead
+                    {
+                        Id = Guid.NewGuid(),
+                        FirstName = "Sophia",
+                        LastName = "Chen",
+                        CompanyName = "Apex Data Systems",
+                        JobTitle = "Chief Technology Officer",
+                        Phone = "+1 (555) 345-6789",
+                        Email = "schen@apexdatasystems.com",
+                        EstimatedBudget = 80000m,
+                        Status = LeadStatus.Contacted,
+                        Score = 90,
+                        IsKeyAccount = true,
+                        Priority = "Urgent",
+                        Campaign = "Google Inbound SEM",
+                        NextFollowUpDate = DateTime.UtcNow.AddDays(1),
+                        Description = "Enterprise CRM integration and custom workflow microservices pipeline.",
+                        SourceId = googleSource?.Id,
+                        AssignedEmployeeId = salesEmp?.Id
+                    },
+                    new Lead
+                    {
+                        Id = Guid.NewGuid(),
+                        FirstName = "Carlos",
+                        LastName = "Mendoza",
+                        CompanyName = "Solaria Logistics",
+                        JobTitle = "Operations Director",
+                        Phone = "+1 (555) 456-7890",
+                        Email = "carlos.m@solaria-logistics.net",
+                        EstimatedBudget = 18000m,
+                        Status = LeadStatus.Qualified,
+                        Score = 70,
+                        IsKeyAccount = false,
+                        Priority = "Medium",
+                        Campaign = "Partner Referral",
+                        NextFollowUpDate = DateTime.UtcNow.AddDays(4),
+                        Description = "Fleet tracking API integration and operations dashboard.",
+                        SourceId = referralSource?.Id,
+                        AssignedEmployeeId = salesEmp?.Id
+                    }
+                };
+                context.Leads.AddRange(sampleLeads);
+                await context.SaveChangesAsync();
+            }
+
+            // 10. Seed Sample Accounts, Contacts, Deals, Tasks, Appointments
+            if (!await context.Accounts.AnyAsync())
+            {
+                var salesEmp = await context.Employees.Include(e => e.User).FirstOrDefaultAsync(e => e.User.Email == "sales@enterprisecrm.local");
+                var stages = await context.PipelineStages.OrderBy(s => s.OrderIndex).ToListAsync();
+
+                // Account 1: Nexus Global Tech
+                var accNexus = new Account
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "ACC-2026-NEXUS",
+                    Name = "Nexus Global Technologies",
+                    TaxCode = "US-987654321",
+                    Industry = "Information Technology",
+                    Website = "https://nexusglobal.tech",
+                    Phone = "+1 (555) 789-0123",
+                    Email = "procurement@nexusglobal.tech",
+                    BillingAddress = "500 Oracle Parkway, Suite 400, Redwood City, CA 94065",
+                    Classification = "VIP",
+                    Status = "Active",
+                    Description = "Global enterprise software provider with 1,200+ team members.",
+                    AssignedEmployeeId = salesEmp?.Id
+                };
+                context.Accounts.Add(accNexus);
+
+                var contactNexus = new Contact
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = accNexus.Id,
+                    FirstName = "Robert",
+                    LastName = "Sterling",
+                    Email = "r.sterling@nexusglobal.tech",
+                    Phone = "+1 (555) 789-0124",
+                    Position = "Senior Director of Procurement",
+                    Department = "Global Sourcing",
+                    IsPrimary = true,
+                    Status = "Active"
+                };
+                context.Contacts.Add(contactNexus);
+
+                // Account 2: Apex Financial Group
+                var accApex = new Account
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "ACC-2026-APEX",
+                    Name = "Apex Financial Group",
+                    TaxCode = "US-123456789",
+                    Industry = "Financial Services",
+                    Website = "https://apexfinancial.com",
+                    Phone = "+1 (555) 890-1234",
+                    Email = "info@apexfinancial.com",
+                    BillingAddress = "200 Wall Street, Floor 18, New York, NY 10005",
+                    Classification = "VIP",
+                    Status = "Active",
+                    Description = "Leading wealth management and corporate investment consultancy.",
+                    AssignedEmployeeId = salesEmp?.Id
+                };
+                context.Accounts.Add(accApex);
+
+                var contactApex = new Contact
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = accApex.Id,
+                    FirstName = "Claire",
+                    LastName = "Vanderbilt",
+                    Email = "claire.v@apexfinancial.com",
+                    Phone = "+1 (555) 890-1235",
+                    Position = "Managing Partner",
+                    Department = "Executive Leadership",
+                    IsPrimary = true,
+                    Status = "Active"
+                };
+                context.Contacts.Add(contactApex);
+                await context.SaveChangesAsync();
+
+                // Deals for Accounts
+                if (stages.Count >= 4)
+                {
+                    var deal1 = new Deal
+                    {
+                        Id = Guid.NewGuid(),
+                        Code = "DEAL-2026-001",
+                        Title = "Nexus Enterprise CRM & ERP Modernization",
+                        AccountId = accNexus.Id,
+                        ContactId = contactNexus.Id,
+                        StageId = stages[2].Id, // Proposal Delivered (50%)
+                        Amount = 95000m,
+                        ExpectedClosingDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(1)),
+                        Status = DealStatus.Open,
+                        Source = "LinkedIn Enterprise",
+                        Description = "Comprehensive enterprise service overhaul including cloud data pipeline.",
+                        AssignedEmployeeId = salesEmp?.Id
+                    };
+                    context.Deals.Add(deal1);
+
+                    var deal2 = new Deal
+                    {
+                        Id = Guid.NewGuid(),
+                        Code = "DEAL-2026-002",
+                        Title = "Apex Financial Automated Reporting Suite",
+                        AccountId = accApex.Id,
+                        ContactId = contactApex.Id,
+                        StageId = stages[3].Id, // Contract Negotiation (75%)
+                        Amount = 145000m,
+                        ExpectedClosingDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(15)),
+                        Status = DealStatus.Open,
+                        Source = "Partner Referral",
+                        Description = "SOC2 compliant financial reporting and real-time ledger synchronization.",
+                        AssignedEmployeeId = salesEmp?.Id
+                    };
+                    context.Deals.Add(deal2);
+
+                    var deal3 = new Deal
+                    {
+                        Id = Guid.NewGuid(),
+                        Code = "DEAL-2026-003",
+                        Title = "Nexus Phase 2 Security Architecture Audit",
+                        AccountId = accNexus.Id,
+                        ContactId = contactNexus.Id,
+                        StageId = stages[1].Id, // Contacted & Qualified (25%)
+                        Amount = 40000m,
+                        ExpectedClosingDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(2)),
+                        Status = DealStatus.Open,
+                        Source = "Existing Client",
+                        Description = "Penetration testing and zero-trust framework audit.",
+                        AssignedEmployeeId = salesEmp?.Id
+                    };
+                    context.Deals.Add(deal3);
+                    await context.SaveChangesAsync();
+
+                    // Seed Stage Histories
+                    context.DealStageHistories.Add(new DealStageHistory
+                    {
+                        Id = Guid.NewGuid(),
+                        DealId = deal1.Id,
+                        ToStageId = stages[2].Id,
+                        ChangedByName = "Elena Rostova",
+                        ChangedAt = DateTime.UtcNow.AddDays(-5),
+                        Notes = "Proposal delivered during executive demo."
+                    });
+
+                    context.DealStageHistories.Add(new DealStageHistory
+                    {
+                        Id = Guid.NewGuid(),
+                        DealId = deal2.Id,
+                        ToStageId = stages[3].Id,
+                        ChangedByName = "Elena Rostova",
+                        ChangedAt = DateTime.UtcNow.AddDays(-2),
+                        Notes = "Draft contract sent for legal review."
+                    });
+
+                    // Seed Tasks
+                    context.Tasks.Add(new TaskItem
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Finalize CPQ Pricing Matrix for Nexus",
+                        Description = "Confirm tier-3 volume discounts with engineering lead before Wednesday.",
+                        Priority = "Urgent",
+                        Status = "Pending",
+                        DueDate = DateTime.UtcNow.AddDays(1),
+                        AssignedEmployeeId = salesEmp?.Id,
+                        AccountId = accNexus.Id,
+                        DealId = deal1.Id
+                    });
+
+                    context.Tasks.Add(new TaskItem
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Send Legal Addendum to Claire Vanderbilt",
+                        Description = "Incorporate compliance terms requested by Apex general counsel.",
+                        Priority = "High",
+                        Status = "InProgress",
+                        DueDate = DateTime.UtcNow.AddDays(2),
+                        AssignedEmployeeId = salesEmp?.Id,
+                        AccountId = accApex.Id,
+                        DealId = deal2.Id
+                    });
+
+                    // Seed Appointments
+                    context.Appointments.Add(new Appointment
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Contract Review & E-Sign Alignment",
+                        Description = "Review SLA clauses and finalize onboarding timeline.",
+                        StartTime = DateTime.UtcNow.AddDays(1).Date.AddHours(14),
+                        EndTime = DateTime.UtcNow.AddDays(1).Date.AddHours(15),
+                        Location = "Zoom Video Conference",
+                        MeetingLink = "https://zoom.us/j/9876543210",
+                        Status = "Scheduled",
+                        EmployeeId = salesEmp!.Id,
+                        AccountId = accApex.Id,
+                        ContactId = contactApex.Id,
+                        DealId = deal2.Id
+                    });
+
+                    // Seed Crm Activities
+                    context.CrmActivities.Add(new CrmActivity
+                    {
+                        Id = Guid.NewGuid(),
+                        AccountId = accNexus.Id,
+                        ContactId = contactNexus.Id,
+                        DealId = deal1.Id,
+                        ActivityType = "Meeting",
+                        Subject = "Architecture Alignment Call",
+                        Notes = "Client agreed on microservices approach; requested revised quotation by Friday.",
+                        PerformedByName = "Elena Rostova",
+                        CompletedAt = DateTime.UtcNow.AddDays(-3)
+                    });
+
+                    context.CrmActivities.Add(new CrmActivity
+                    {
+                        Id = Guid.NewGuid(),
+                        AccountId = accApex.Id,
+                        ContactId = contactApex.Id,
+                        DealId = deal2.Id,
+                        ActivityType = "Call",
+                        Subject = "Follow-up regarding SOC2 compliance",
+                        Notes = "Addressed all auditor questionnaires; legal signoff expected next week.",
+                        PerformedByName = "Elena Rostova",
+                        CompletedAt = DateTime.UtcNow.AddDays(-1)
+                    });
+
+                    await context.SaveChangesAsync();
+                }
             }
 
             logger.LogInformation("Database seeding completed successfully.");

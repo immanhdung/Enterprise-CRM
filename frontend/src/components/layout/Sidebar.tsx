@@ -44,8 +44,11 @@ const navigationGroups: NavGroup[] = [
       { name: 'Leads', path: '/leads', icon: UserPlus, badge: 'Omnichannel' },
       { name: 'Accounts', path: '/accounts', icon: Building2 },
       { name: 'Contacts', path: '/contacts', icon: Users },
-      { name: 'Deals Pipeline', path: '/deals', icon: KanbanSquare },
-      { name: 'Activities & Tasks', path: '/activities', icon: CalendarCheck },
+      { name: 'Pipeline Kanban', path: '/pipeline', icon: KanbanSquare, badge: 'DND' },
+      { name: 'Deals & Opps', path: '/deals', icon: Briefcase },
+      { name: 'Action Tasks', path: '/tasks', icon: CalendarCheck },
+      { name: 'Appointments', path: '/appointments', icon: CalendarCheck },
+      { name: 'Activity Stream', path: '/activities', icon: CalendarCheck },
     ],
   },
   {

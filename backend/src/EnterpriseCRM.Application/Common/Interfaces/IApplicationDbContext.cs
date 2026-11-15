@@ -25,8 +25,10 @@ public interface IApplicationDbContext
     DbSet<Contact> Contacts { get; }
     DbSet<PipelineStage> PipelineStages { get; }
     DbSet<Deal> Deals { get; }
+    DbSet<DealStageHistory> DealStageHistories { get; }
     DbSet<TaskItem> Tasks { get; }
     DbSet<Appointment> Appointments { get; }
+    DbSet<CrmActivity> CrmActivities { get; }
 
     // Billing & Operations
     DbSet<ServiceItem> Services { get; }

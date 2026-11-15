@@ -15,6 +15,7 @@ using Xunit.Abstractions;
 
 namespace EnterpriseCRM.IntegrationTests;
 
+[Collection("IntegrationTests")]
 public class AuthAndRbacIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;

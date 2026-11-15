@@ -18,6 +18,13 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Leads.ILeadService, LeadService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Accounts.IAccountService, AccountService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Contacts.IContactService, ContactService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Deals.IDealService, DealService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.TasksAndActivities.ITaskService, TaskService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.TasksAndActivities.IAppointmentService, AppointmentService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.TasksAndActivities.ITimelineService, TimelineService>();
 
         // Build Supabase PostgreSQL Connection String
         var connectionString = BuildPostgreSqlConnectionString(configuration);

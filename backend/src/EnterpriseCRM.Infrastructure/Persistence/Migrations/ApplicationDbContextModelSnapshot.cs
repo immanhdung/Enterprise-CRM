@@ -54,6 +54,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -68,6 +71,10 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TaxCode")
@@ -102,6 +109,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("ContactId")
                         .HasColumnType("uuid");
 
@@ -132,6 +142,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid?>("LeadId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Location")
                         .HasColumnType("text");
 
@@ -157,11 +170,15 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AccountId");
+
                     b.HasIndex("ContactId");
 
                     b.HasIndex("DealId");
 
                     b.HasIndex("EmployeeId");
+
+                    b.HasIndex("LeadId");
 
                     b.HasIndex("StartTime");
 
@@ -379,6 +396,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Department")
+                        .HasColumnType("text");
+
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -396,11 +416,18 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Position")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -427,6 +454,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AccountId1")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ContractNumber")
@@ -487,6 +517,8 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountId1");
 
                     b.HasIndex("ContractNumber")
                         .IsUnique();
@@ -550,6 +582,85 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.ToTable("contract_items", (string)null);
                 });
 
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.CrmActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ContactId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DealId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("LeadId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PerformedByName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("PerformedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("ActivityType");
+
+                    b.HasIndex("ContactId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("DealId");
+
+                    b.HasIndex("LeadId");
+
+                    b.ToTable("crm_activities", (string)null);
+                });
+
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Deal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -588,6 +699,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<DateOnly>("ExpectedClosingDate")
                         .HasColumnType("date");
 
@@ -595,6 +709,13 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("LostReason")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("ProbabilityOverride")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<string>("Source")
                         .HasColumnType("text");
 
                     b.Property<Guid>("StageId")
@@ -627,6 +748,70 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.HasIndex("StageId");
 
                     b.ToTable("deals", (string)null);
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.DealStageHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChangedByName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ChangedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DealId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DurationDays")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("FromStageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ToStageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangedAt");
+
+                    b.HasIndex("DealId");
+
+                    b.HasIndex("FromStageId");
+
+                    b.HasIndex("ToStageId");
+
+                    b.ToTable("deal_stage_histories", (string)null);
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Department", b =>
@@ -951,6 +1136,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("AssignedEmployeeId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Campaign")
+                        .HasColumnType("text");
+
                     b.Property<string>("CompanyName")
                         .HasColumnType("text");
 
@@ -978,6 +1166,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -1002,7 +1193,17 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("NextFollowUpDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
                     b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Priority")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -1024,6 +1225,12 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedEmployeeId");
+
+                    b.HasIndex("ConvertedAccountId");
+
+                    b.HasIndex("ConvertedContactId");
+
+                    b.HasIndex("ConvertedDealId");
 
                     b.HasIndex("Email");
 
@@ -1598,6 +1805,9 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1647,6 +1857,8 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("Code")
                         .IsUnique();
@@ -1928,6 +2140,12 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("AssignedEmployeeId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ContactId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1952,9 +2170,15 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid?>("LeadId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Priority")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1976,9 +2200,13 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("AssignedEmployeeId");
 
+                    b.HasIndex("ContactId");
+
                     b.HasIndex("DealId");
 
                     b.HasIndex("DueDate");
+
+                    b.HasIndex("LeadId");
 
                     b.HasIndex("Status");
 
@@ -2237,6 +2465,10 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Appointment", b =>
                 {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
                     b.HasOne("EnterpriseCRM.Domain.Entities.Contact", "Contact")
                         .WithMany()
                         .HasForeignKey("ContactId");
@@ -2251,11 +2483,19 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId");
+
+                    b.Navigation("Account");
+
                     b.Navigation("Contact");
 
                     b.Navigation("Deal");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("Lead");
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Commission", b =>
@@ -2306,6 +2546,10 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", null)
+                        .WithMany("Contracts")
+                        .HasForeignKey("AccountId1");
+
                     b.HasOne("EnterpriseCRM.Domain.Entities.Quotation", "Quotation")
                         .WithMany()
                         .HasForeignKey("QuotationId");
@@ -2334,6 +2578,33 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.CrmActivity", b =>
+                {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Contact", "Contact")
+                        .WithMany()
+                        .HasForeignKey("ContactId");
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Deal", "Deal")
+                        .WithMany()
+                        .HasForeignKey("DealId");
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId");
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Contact");
+
+                    b.Navigation("Deal");
+
+                    b.Navigation("Lead");
+                });
+
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Deal", b =>
                 {
                     b.HasOne("EnterpriseCRM.Domain.Entities.Account", "Account")
@@ -2347,7 +2618,7 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .HasForeignKey("AssignedEmployeeId");
 
                     b.HasOne("EnterpriseCRM.Domain.Entities.Contact", "Contact")
-                        .WithMany()
+                        .WithMany("Deals")
                         .HasForeignKey("ContactId");
 
                     b.HasOne("EnterpriseCRM.Domain.Entities.PipelineStage", "Stage")
@@ -2363,6 +2634,32 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Navigation("Contact");
 
                     b.Navigation("Stage");
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.DealStageHistory", b =>
+                {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Deal", "Deal")
+                        .WithMany("StageHistories")
+                        .HasForeignKey("DealId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.PipelineStage", "FromStage")
+                        .WithMany()
+                        .HasForeignKey("FromStageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.PipelineStage", "ToStage")
+                        .WithMany()
+                        .HasForeignKey("ToStageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Deal");
+
+                    b.Navigation("FromStage");
+
+                    b.Navigation("ToStage");
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Employee", b =>
@@ -2435,12 +2732,30 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .HasForeignKey("AssignedEmployeeId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", "ConvertedAccount")
+                        .WithMany()
+                        .HasForeignKey("ConvertedAccountId");
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Contact", "ConvertedContact")
+                        .WithMany()
+                        .HasForeignKey("ConvertedContactId");
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Deal", "ConvertedDeal")
+                        .WithMany()
+                        .HasForeignKey("ConvertedDealId");
+
                     b.HasOne("EnterpriseCRM.Domain.Entities.LeadSource", "Source")
                         .WithMany("Leads")
                         .HasForeignKey("SourceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("AssignedEmployee");
+
+                    b.Navigation("ConvertedAccount");
+
+                    b.Navigation("ConvertedContact");
+
+                    b.Navigation("ConvertedDeal");
 
                     b.Navigation("Source");
                 });
@@ -2534,6 +2849,10 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Project", b =>
                 {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", null)
+                        .WithMany("Projects")
+                        .HasForeignKey("AccountId");
+
                     b.HasOne("EnterpriseCRM.Domain.Entities.Contract", "Contract")
                         .WithMany()
                         .HasForeignKey("ContractId");
@@ -2604,15 +2923,27 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("AssignedEmployeeId");
 
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Contact", "Contact")
+                        .WithMany()
+                        .HasForeignKey("ContactId");
+
                     b.HasOne("EnterpriseCRM.Domain.Entities.Deal", "Deal")
                         .WithMany()
                         .HasForeignKey("DealId");
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Lead", "Lead")
+                        .WithMany()
+                        .HasForeignKey("LeadId");
 
                     b.Navigation("Account");
 
                     b.Navigation("AssignedEmployee");
 
+                    b.Navigation("Contact");
+
                     b.Navigation("Deal");
+
+                    b.Navigation("Lead");
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Team", b =>
@@ -2660,6 +2991,15 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                 {
                     b.Navigation("Contacts");
 
+                    b.Navigation("Contracts");
+
+                    b.Navigation("Deals");
+
+                    b.Navigation("Projects");
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Contact", b =>
+                {
                     b.Navigation("Deals");
                 });
 
@@ -2668,6 +3008,11 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("PaymentSchedules");
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Deal", b =>
+                {
+                    b.Navigation("StageHistories");
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Department", b =>

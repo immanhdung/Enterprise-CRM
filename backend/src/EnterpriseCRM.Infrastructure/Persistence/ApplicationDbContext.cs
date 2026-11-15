@@ -30,8 +30,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Contact> Contacts => Set<Contact>();
     public DbSet<PipelineStage> PipelineStages => Set<PipelineStage>();
     public DbSet<Deal> Deals => Set<Deal>();
+    public DbSet<DealStageHistory> DealStageHistories => Set<DealStageHistory>();
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<CrmActivity> CrmActivities => Set<CrmActivity>();
 
     // Billing & Operations
     public DbSet<ServiceItem> Services => Set<ServiceItem>();
@@ -71,6 +73,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<Deal>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<TaskItem>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Appointment>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CrmActivity>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<ServiceItem>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Quotation>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Contract>().HasQueryFilter(e => !e.IsDeleted);
@@ -253,8 +256,32 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Code).IsUnique();
             entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.ProbabilityOverride).HasPrecision(5, 2);
             entity.HasOne(e => e.Account).WithMany(a => a.Deals).HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.Stage).WithMany(s => s.Deals).HasForeignKey(e => e.StageId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<DealStageHistory>(entity =>
+        {
+            entity.ToTable("deal_stage_histories");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.DealId);
+            entity.HasIndex(e => e.ChangedAt);
+            entity.HasOne(e => e.Deal).WithMany(d => d.StageHistories).HasForeignKey(e => e.DealId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.FromStage).WithMany().HasForeignKey(e => e.FromStageId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.ToStage).WithMany().HasForeignKey(e => e.ToStageId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CrmActivity>(entity =>
+        {
+            entity.ToTable("crm_activities");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.LeadId);
+            entity.HasIndex(e => e.AccountId);
+            entity.HasIndex(e => e.ContactId);
+            entity.HasIndex(e => e.DealId);
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.ActivityType);
         });
 
         modelBuilder.Entity<TaskItem>(entity =>
