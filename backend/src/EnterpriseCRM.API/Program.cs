@@ -1,5 +1,12 @@
+using System.Text;
+using EnterpriseCRM.API.Authorization;
 using EnterpriseCRM.API.Middleware;
+using EnterpriseCRM.Application;
 using EnterpriseCRM.Infrastructure;
+using EnterpriseCRM.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -26,8 +33,41 @@ builder.Services.AddControllers()
 // OpenAPI Documentation (.NET 10)
 builder.Services.AddOpenApi();
 
-// Add Clean Architecture Infrastructure
+// Clean Architecture Application & Infrastructure
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Configure JWT Authentication
+var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "EnterpriseCRM_Super_Secret_Key_For_JWT_Authentication_2026_Minimum_32_Chars!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "EnterpriseCRM.API";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "EnterpriseCRM.Client";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// Configure RBAC and Permission-based Authorization
+builder.Services.AddAuthorization();
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 // Configure CORS for Frontend
 builder.Services.AddCors(options =>
@@ -60,14 +100,26 @@ if (app.Environment.IsDevelopment() || true)
                .WithDefaultHttpClient(ScalarTarget.JavaScript, ScalarClient.Axios);
     });
 
-    // Provide seamless alias for /swagger
     app.MapGet("/swagger", () => Results.Redirect("/scalar/v1"))
        .ExcludeFromDescription();
 }
 
 app.UseCors("AllowFrontend");
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
+
+// Execute Database Seeder
+try
+{
+    await DatabaseSeeder.SeedAsync(app.Services);
+}
+catch (Exception ex)
+{
+    Log.Error(ex, "Failed to run database seeder on application startup: {Message}", ex.Message);
+}
 
 Log.Information("Enterprise CRM API started on environment: {Environment}", app.Environment.EnvironmentName);
 

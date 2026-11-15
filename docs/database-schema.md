@@ -1,4 +1,8 @@
-# Enterprise CRM – Database Schema & ERD Proposal
+# Enterprise CRM – Database Schema & ERD Documentation
+
+> **Status (Phase 2):** ✅ Applied to Supabase PostgreSQL (`aws-0-ap-northeast-2.pooler.supabase.com`)  
+> **Initial Migration:** `20261115121722_InitialCreate`  
+> **Schema Execution:** 37 Tables Created with Soft Delete Query Filters, UTC Timestamps, Decimal(18,2) precision, and Indexes.
 
 ## 1. Overview & Database Standards
 

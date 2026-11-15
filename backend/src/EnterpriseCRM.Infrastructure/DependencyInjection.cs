@@ -1,4 +1,5 @@
 using EnterpriseCRM.Application.Common.Interfaces;
+using EnterpriseCRM.Application.Features.Auth;
 using EnterpriseCRM.Infrastructure.Persistence;
 using EnterpriseCRM.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpContextAccessor();
         services.AddSingleton<IDateTimeService, DateTimeService>();
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         // Build Supabase PostgreSQL Connection String
         var connectionString = BuildPostgreSqlConnectionString(configuration);
@@ -37,18 +43,19 @@ public static class DependencyInjection
     {
         var configuredConn = configuration.GetConnectionString("DefaultConnection");
 
-        // Check for specific environment variables
-        var dbPassword = Environment.GetEnvironmentVariable("SUPABASE_DB_PASSWORD")
-                      ?? Environment.GetEnvironmentVariable("POSTGRES_PASSWORD")
-                      ?? configuration["Database:Password"];
+        // Check configuration (including User Secrets) and environment variables
+        var dbPassword = configuration["SUPABASE_DB_PASSWORD"]
+                      ?? configuration["Database:Password"]
+                      ?? Environment.GetEnvironmentVariable("SUPABASE_DB_PASSWORD")
+                      ?? Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 
         var host = configuration["Database:Host"]
                 ?? Environment.GetEnvironmentVariable("SUPABASE_DB_HOST")
-                ?? "db.ehmjgxwrmzlccnivqqxb.supabase.co";
+                ?? "aws-0-ap-northeast-2.pooler.supabase.com";
 
         var port = configuration["Database:Port"]
                 ?? Environment.GetEnvironmentVariable("SUPABASE_DB_PORT")
-                ?? "5432";
+                ?? "5432"; // 5432 for session pooler (supports DDL and queries reliably)
 
         var database = configuration["Database:Name"]
                     ?? Environment.GetEnvironmentVariable("SUPABASE_DB_NAME")
@@ -56,7 +63,7 @@ public static class DependencyInjection
 
         var username = configuration["Database:Username"]
                     ?? Environment.GetEnvironmentVariable("SUPABASE_DB_USERNAME")
-                    ?? "postgres";
+                    ?? "postgres.ehmjgxwrmzlccnivqqxb";
 
         if (!string.IsNullOrWhiteSpace(configuredConn))
         {

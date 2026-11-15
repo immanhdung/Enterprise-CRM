@@ -6,35 +6,53 @@ public class ApiResponse<T>
     public T? Data { get; set; }
     public string? Message { get; set; }
     public List<string>? Errors { get; set; }
+    public int StatusCode { get; set; } = 200;
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    public static ApiResponse<T> Succeeded(T data, string? message = null)
+    public static ApiResponse<T> Succeeded(T data, string? message = null, int statusCode = 200)
     {
         return new ApiResponse<T>
         {
             Success = true,
             Data = data,
             Message = message,
+            StatusCode = statusCode,
             Errors = null,
             Timestamp = DateTime.UtcNow
         };
     }
 
-    public static ApiResponse<T> Failed(List<string> errors, string? message = null)
+    public static ApiResponse<T> SuccessResponse(T data, string? message = null, int statusCode = 200)
+    {
+        return Succeeded(data, message, statusCode);
+    }
+
+    public static ApiResponse<T> Failed(List<string> errors, string? message = null, int statusCode = 400)
     {
         return new ApiResponse<T>
         {
             Success = false,
             Data = default,
             Message = message,
+            StatusCode = statusCode,
             Errors = errors,
             Timestamp = DateTime.UtcNow
         };
     }
 
-    public static ApiResponse<T> Failed(string error, string? message = null)
+    public static ApiResponse<T> Failed(string error, string? message = null, int statusCode = 400)
     {
-        return Failed(new List<string> { error }, message);
+        return Failed(new List<string> { error }, message, statusCode);
+    }
+
+    public static ApiResponse<T> FailureResponse(string error, int statusCode = 400, string? message = null)
+    {
+        return Failed(error, message ?? error, statusCode);
+    }
+
+    public static ApiResponse<T> FailureResponse(List<string> errors, int statusCode = 400, string? message = null)
+    {
+        return Failed(errors, message, statusCode);
     }
 }
 

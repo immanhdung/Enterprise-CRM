@@ -20,9 +20,23 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/utils/cn';
 
-const navigationGroups = [
+interface NavItem {
+  name: string;
+  path: string;
+  icon: React.ElementType;
+  badge?: string;
+  requiredRoles?: string[];
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navigationGroups: NavGroup[] = [
   {
     title: 'CRM CORE',
     items: [
@@ -40,22 +54,29 @@ const navigationGroups = [
       { name: 'Quotations', path: '/quotations', icon: FileSpreadsheet },
       { name: 'Contracts & E-Sign', path: '/contracts', icon: FileCheck },
       { name: 'Projects', path: '/projects', icon: Briefcase },
-      { name: 'Finance & Invoices', path: '/finance', icon: Receipt },
+      { name: 'Finance & Invoices', path: '/finance', icon: Receipt, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant'] },
     ],
   },
   {
     title: 'PERFORMANCE & AI',
     items: [
-      { name: 'Commissions & Payroll', path: '/payroll', icon: CircleDollarSign },
-      { name: 'Workflows & Jobs', path: '/workflows', icon: Cpu },
+      { name: 'Commissions & Payroll', path: '/payroll', icon: CircleDollarSign, requiredRoles: ['Admin', 'CEO_BOD', 'Manager', 'Accountant'] },
+      { name: 'Workflows & Jobs', path: '/workflows', icon: Cpu, requiredRoles: ['Admin', 'CEO_BOD', 'Manager'] },
       { name: 'AI Assistant', path: '/ai-assistant', icon: Sparkles, badge: 'AI' },
-      { name: 'Administration', path: '/admin', icon: Settings },
+      { name: 'Administration', path: '/admin', icon: Settings, requiredRoles: ['Admin', 'CEO_BOD'] },
     ],
   },
 ];
 
 export const Sidebar: React.FC = () => {
   const { isSidebarCollapsed, toggleSidebar } = useUIStore();
+  const { hasRole, user } = useAuthStore();
+
+  const isItemVisible = (item: NavItem) => {
+    if (!item.requiredRoles || item.requiredRoles.length === 0) return true;
+    if (user?.roles.includes('Admin')) return true;
+    return item.requiredRoles.some((role) => hasRole(role));
+  };
 
   return (
     <aside
@@ -88,42 +109,47 @@ export const Sidebar: React.FC = () => {
 
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 scrollbar-thin">
-        {navigationGroups.map((group, groupIdx) => (
-          <div key={groupIdx} className="space-y-1">
-            {!isSidebarCollapsed && (
-              <h3 className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                {group.title}
-              </h3>
-            )}
-            {group.items.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group relative',
-                      isActive
-                        ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    )
-                  }
-                >
-                  <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105" />
-                  {!isSidebarCollapsed && (
-                    <span className="truncate flex-1 text-left">{item.name}</span>
-                  )}
-                  {!isSidebarCollapsed && item.badge && (
-                    <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
-                      {item.badge}
-                    </span>
-                  )}
-                </NavLink>
-              );
-            })}
-          </div>
-        ))}
+        {navigationGroups.map((group, groupIdx) => {
+          const visibleItems = group.items.filter(isItemVisible);
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={groupIdx} className="space-y-1">
+              {!isSidebarCollapsed && (
+                <h3 className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  {group.title}
+                </h3>
+              )}
+              {visibleItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group relative',
+                        isActive
+                          ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      )
+                    }
+                  >
+                    <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105" />
+                    {!isSidebarCollapsed && (
+                      <span className="truncate flex-1 text-left">{item.name}</span>
+                    )}
+                    {!isSidebarCollapsed && item.badge && (
+                      <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
       {/* Footer System Status Indicator */}
@@ -133,7 +159,7 @@ export const Sidebar: React.FC = () => {
           {!isSidebarCollapsed && (
             <div className="flex flex-col text-xs text-slate-500 truncate">
               <span className="font-medium text-slate-700">Supabase Connected</span>
-              <span className="text-[10px] text-slate-400">PostgreSQL v15+</span>
+              <span className="text-[10px] text-slate-400">PostgreSQL v17</span>
             </div>
           )}
         </div>

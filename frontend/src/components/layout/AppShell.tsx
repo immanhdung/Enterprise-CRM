@@ -1,9 +1,10 @@
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
 interface AppShellProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
@@ -13,7 +14,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar />
         <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
-          {children}
+          {children || <Outlet />}
         </main>
       </div>
     </div>

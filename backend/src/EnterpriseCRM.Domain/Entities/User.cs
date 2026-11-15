@@ -16,6 +16,9 @@ public class User : BaseEntity, IAuditableEntity, ISoftDeletable
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiresAt { get; set; }
 
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
+
     // Navigation properties
     public Employee? EmployeeProfile { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
