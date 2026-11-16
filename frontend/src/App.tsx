@@ -20,6 +20,15 @@ import { TasksPage } from '@/features/tasks/TasksPage';
 import { AppointmentsPage } from '@/features/appointments/AppointmentsPage';
 import { ActivitiesPage } from '@/features/activities/ActivitiesPage';
 
+// Phase 4 Quotation & Contract Management Pages
+import { ServicesPage } from '@/features/services/ServicesPage';
+import { PriceListsPage } from '@/features/services/PriceListsPage';
+import { QuotationsPage } from '@/features/quotations/QuotationsPage';
+import { QuotationDetailPage } from '@/features/quotations/QuotationDetailPage';
+import { ContractsPage } from '@/features/contracts/ContractsPage';
+import { ContractDetailPage } from '@/features/contracts/ContractDetailPage';
+import { ContractTemplatesPage } from '@/features/contracts/ContractTemplatesPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -65,34 +74,23 @@ export function App() {
               <Route path="/appointments" element={<AppointmentsPage />} />
               <Route path="/activities" element={<ActivitiesPage />} />
 
+              {/* Phase 4 – Quotation & Contract Management */}
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/price-lists" element={<PriceListsPage />} />
+              <Route path="/quotations" element={<QuotationsPage />} />
+              <Route path="/quotations/:id" element={<QuotationDetailPage />} />
+              <Route path="/contracts" element={<ContractsPage />} />
+              <Route path="/contracts/:id" element={<ContractDetailPage />} />
+              <Route path="/contract-templates" element={<ContractTemplatesPage />} />
+
               {/* Future Phases Placeholders */}
-              <Route
-                path="/quotations"
-                element={
-                  <FeaturePlaceholder
-                    title="Quotations & CPQ"
-                    description="Service catalog pricing, automated calculation with VAT/discounts, approval workflows, and branded PDF generation."
-                    phase="Phase 4 (Operations)"
-                  />
-                }
-              />
-              <Route
-                path="/contracts"
-                element={
-                  <FeaturePlaceholder
-                    title="Contracts & E-Signatures"
-                    description="Contract lifecycle, contract appendices, expiration reminders, and electronic signature integration adapters."
-                    phase="Phase 4 (Operations)"
-                  />
-                }
-              />
               <Route
                 path="/projects"
                 element={
                   <FeaturePlaceholder
                     title="Projects & Delivery"
                     description="Milestone tracking linked to signed contracts, service delivery phases, and progress monitoring."
-                    phase="Phase 4 (Operations)"
+                    phase="Phase 5 (Projects)"
                   />
                 }
               />

@@ -89,6 +89,7 @@ public class Account : BaseEntity, IAuditableEntity, ISoftDeletable
 
     public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
     public ICollection<Deal> Deals { get; set; } = new List<Deal>();
+    public ICollection<Quotation> Quotations { get; set; } = new List<Quotation>();
     public ICollection<Contract> Contracts { get; set; } = new List<Contract>();
     public ICollection<Project> Projects { get; set; } = new List<Project>();
 }
@@ -110,6 +111,8 @@ public class Contact : BaseEntity, IAuditableEntity, ISoftDeletable
     public string? Notes { get; set; }
 
     public ICollection<Deal> Deals { get; set; } = new List<Deal>();
+    public ICollection<Quotation> Quotations { get; set; } = new List<Quotation>();
+    public ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 }
 
 public class PipelineStage : BaseEntity
@@ -154,6 +157,7 @@ public class Deal : BaseEntity, IAuditableEntity, ISoftDeletable
     public string? Description { get; set; }
 
     public ICollection<DealStageHistory> StageHistories { get; set; } = new List<DealStageHistory>();
+    public ICollection<Quotation> Quotations { get; set; } = new List<Quotation>();
 }
 
 public class DealStageHistory : BaseEntity

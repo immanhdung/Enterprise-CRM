@@ -23,6 +23,10 @@ public static class Permissions
     public const string DealsDelete = "deals:delete";
     public const string DealsStageChange = "deals:stage_change";
 
+    // Services & Price Lists Module
+    public const string ServicesView = "services:view";
+    public const string ServicesManage = "services:manage";
+
     // Quotations Module
     public const string QuotationsView = "quotations:view";
     public const string QuotationsCreate = "quotations:create";
@@ -37,6 +41,9 @@ public static class Permissions
     public const string ContractsEdit = "contracts:edit";
     public const string ContractsDelete = "contracts:delete";
     public const string ContractsApprove = "contracts:approve";
+    public const string ContractsSign = "contracts:sign";
+    public const string ContractTemplatesView = "contracts:templates_view";
+    public const string ContractTemplatesManage = "contracts:templates_manage";
 
     // Projects Module
     public const string ProjectsView = "projects:view";
@@ -109,6 +116,9 @@ public static class Permissions
         (DealsDelete, "Deals", "Delete deals"),
         (DealsStageChange, "Deals", "Move deals across pipeline stages"),
 
+        (ServicesView, "Services", "View service catalog and price lists"),
+        (ServicesManage, "Services", "Manage services, categories and pricing"),
+
         (QuotationsView, "Quotations", "View quotations"),
         (QuotationsCreate, "Quotations", "Create new quotations"),
         (QuotationsEdit, "Quotations", "Edit quotations"),
@@ -121,6 +131,9 @@ public static class Permissions
         (ContractsEdit, "Contracts", "Edit contracts"),
         (ContractsDelete, "Contracts", "Delete contracts"),
         (ContractsApprove, "Contracts", "Approve contracts"),
+        (ContractsSign, "Contracts", "Initiate and track e-signatures"),
+        (ContractTemplatesView, "Contracts", "View contract templates"),
+        (ContractTemplatesManage, "Contracts", "Manage contract templates"),
 
         (ProjectsView, "Projects", "View projects"),
         (ProjectsCreate, "Projects", "Create new projects"),

@@ -18,6 +18,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  Layers,
+  Tag,
+  FileText,
 } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -54,8 +57,11 @@ const navigationGroups: NavGroup[] = [
   {
     title: 'OPERATIONS & CPQ',
     items: [
+      { name: 'Services Catalog', path: '/services', icon: Layers },
+      { name: 'Price Lists', path: '/price-lists', icon: Tag },
       { name: 'Quotations', path: '/quotations', icon: FileSpreadsheet },
       { name: 'Contracts & E-Sign', path: '/contracts', icon: FileCheck },
+      { name: 'Contract Templates', path: '/contract-templates', icon: FileText },
       { name: 'Projects', path: '/projects', icon: Briefcase },
       { name: 'Finance & Invoices', path: '/finance', icon: Receipt, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant'] },
     ],

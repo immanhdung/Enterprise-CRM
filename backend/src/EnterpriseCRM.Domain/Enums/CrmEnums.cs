@@ -43,7 +43,8 @@ public enum ContractStatus
     Signed = 4,
     Active = 5,
     Expired = 6,
-    Terminated = 7
+    Terminated = 7,
+    Renewed = 8
 }
 
 public enum InvoiceStatus

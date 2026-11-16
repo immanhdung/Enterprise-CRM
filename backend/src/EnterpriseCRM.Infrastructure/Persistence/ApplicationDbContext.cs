@@ -36,11 +36,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<CrmActivity> CrmActivities => Set<CrmActivity>();
 
     // Billing & Operations
+    public DbSet<ServiceCategory> ServiceCategories => Set<ServiceCategory>();
     public DbSet<ServiceItem> Services => Set<ServiceItem>();
+    public DbSet<PriceList> PriceLists => Set<PriceList>();
+    public DbSet<PriceListItem> PriceListItems => Set<PriceListItem>();
+    public DbSet<ServicePriceHistory> ServicePriceHistories => Set<ServicePriceHistory>();
     public DbSet<Quotation> Quotations => Set<Quotation>();
     public DbSet<QuotationItem> QuotationItems => Set<QuotationItem>();
+    public DbSet<QuotationApprovalHistory> QuotationApprovalHistories => Set<QuotationApprovalHistory>();
+    public DbSet<ContractTemplate> ContractTemplates => Set<ContractTemplate>();
     public DbSet<Contract> Contracts => Set<Contract>();
     public DbSet<ContractItem> ContractItems => Set<ContractItem>();
+    public DbSet<ContractAppendix> ContractAppendices => Set<ContractAppendix>();
+    public DbSet<ContractHistory> ContractHistories => Set<ContractHistory>();
+    public DbSet<SignatureRequest> SignatureRequests => Set<SignatureRequest>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<PaymentSchedule> PaymentSchedules => Set<PaymentSchedule>();
     public DbSet<Payment> Payments => Set<Payment>();
@@ -74,9 +83,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<TaskItem>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Appointment>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CrmActivity>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ServiceCategory>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<ServiceItem>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<PriceList>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Quotation>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ContractTemplate>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Contract>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ContractAppendix>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<SignatureRequest>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Project>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<PaymentSchedule>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Payment>().HasQueryFilter(e => !e.IsDeleted);
@@ -299,25 +313,75 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasIndex(e => e.StartTime);
         });
 
-        // Billing: Services & Quotations
+        // Billing: Services & Price Lists
+        modelBuilder.Entity<ServiceCategory>(entity =>
+        {
+            entity.ToTable("service_categories");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+        });
+
+        modelBuilder.Entity<PriceList>(entity =>
+        {
+            entity.ToTable("price_lists");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.Currency).HasMaxLength(10).HasDefaultValue("USD");
+        });
+
+        modelBuilder.Entity<PriceListItem>(entity =>
+        {
+            entity.ToTable("price_list_items");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+            entity.Property(e => e.MinQuantity).HasPrecision(10, 2);
+            entity.Property(e => e.MaxDiscountRate).HasPrecision(5, 2);
+            entity.HasOne(e => e.PriceList).WithMany(p => p.Items).HasForeignKey(e => e.PriceListId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Service).WithMany(s => s.PriceListItems).HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ServicePriceHistory>(entity =>
+        {
+            entity.ToTable("service_price_histories");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OldPrice).HasPrecision(18, 2);
+            entity.Property(e => e.NewPrice).HasPrecision(18, 2);
+            entity.HasOne(e => e.Service).WithMany(s => s.PriceHistories).HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<ServiceItem>(entity =>
         {
             entity.ToTable("services");
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
             entity.Property(e => e.BasePrice).HasPrecision(18, 2);
+            entity.Property(e => e.CostPrice).HasPrecision(18, 2);
             entity.Property(e => e.VatRate).HasPrecision(5, 2);
+            entity.HasOne(e => e.ServiceCategory).WithMany(c => c.Services).HasForeignKey(e => e.CategoryId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Quotation>(entity =>
         {
             entity.ToTable("quotations");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.QuotationNumber).IsUnique();
+            entity.HasIndex(e => new { e.QuotationNumber, e.RevisionNumber }).IsUnique();
+            entity.Property(e => e.QuotationNumber).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.RevisionNumber).HasMaxLength(20).HasDefaultValue("REV-01");
             entity.Property(e => e.Subtotal).HasPrecision(18, 2);
             entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
             entity.Property(e => e.VatAmount).HasPrecision(18, 2);
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+            entity.HasOne(e => e.Account).WithMany(a => a.Quotations).HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Contact).WithMany(c => c.Quotations).HasForeignKey(e => e.ContactId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Deal).WithMany(d => d.Quotations).HasForeignKey(e => e.DealId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.PriceList).WithMany(p => p.Quotations).HasForeignKey(e => e.PriceListId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.ParentQuotation).WithMany(q => q.Revisions).HasForeignKey(e => e.ParentQuotationId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<QuotationItem>(entity =>
@@ -327,18 +391,44 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Quantity).HasPrecision(10, 2);
             entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
             entity.Property(e => e.DiscountRate).HasPrecision(5, 2);
+            entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(e => e.VatRate).HasPrecision(5, 2);
+            entity.Property(e => e.VatAmount).HasPrecision(18, 2);
             entity.Property(e => e.LineTotal).HasPrecision(18, 2);
             entity.HasOne(e => e.Quotation).WithMany(q => q.Items).HasForeignKey(e => e.QuotationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Service).WithMany(s => s.QuotationItems).HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Billing: Contracts & Appendices
+        modelBuilder.Entity<QuotationApprovalHistory>(entity =>
+        {
+            entity.ToTable("quotation_approval_histories");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Action).HasMaxLength(50).IsRequired();
+            entity.HasOne(e => e.Quotation).WithMany(q => q.ApprovalHistories).HasForeignKey(e => e.QuotationId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Billing: Contract Templates, Contracts & Appendices
+        modelBuilder.Entity<ContractTemplate>(entity =>
+        {
+            entity.ToTable("contract_templates");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+        });
+
         modelBuilder.Entity<Contract>(entity =>
         {
             entity.ToTable("contracts");
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.ContractNumber).IsUnique();
+            entity.Property(e => e.ContractNumber).HasMaxLength(50).IsRequired();
             entity.Property(e => e.TotalValue).HasPrecision(18, 2);
-            entity.HasOne(e => e.Account).WithMany().HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Account).WithMany(a => a.Contracts).HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Contact).WithMany(c => c.Contracts).HasForeignKey(e => e.ContactId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Quotation).WithMany(q => q.Contracts).HasForeignKey(e => e.QuotationId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Template).WithMany(t => t.Contracts).HasForeignKey(e => e.TemplateId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.ParentContract).WithMany(c => c.Renewals).HasForeignKey(e => e.ParentContractId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ContractItem>(entity =>
@@ -349,6 +439,34 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
             entity.Property(e => e.LineTotal).HasPrecision(18, 2);
             entity.HasOne(e => e.Contract).WithMany(c => c.Items).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Service).WithMany(s => s.ContractItems).HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ContractAppendix>(entity =>
+        {
+            entity.ToTable("contract_appendices");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AppendixNumber).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.AdjustedValue).HasPrecision(18, 2);
+            entity.HasOne(e => e.Contract).WithMany(c => c.Appendices).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ContractHistory>(entity =>
+        {
+            entity.ToTable("contract_histories");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Action).HasMaxLength(50).IsRequired();
+            entity.HasOne(e => e.Contract).WithMany(c => c.Histories).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SignatureRequest>(entity =>
+        {
+            entity.ToTable("signature_requests");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Provider).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ExternalEnvelopeId).HasMaxLength(150);
+            entity.HasOne(e => e.Contract).WithMany(c => c.SignatureRequests).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Cascade);
         });
 
         // Billing: Projects, Payments & Invoices

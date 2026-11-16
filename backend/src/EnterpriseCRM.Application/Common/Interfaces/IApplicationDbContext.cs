@@ -31,11 +31,20 @@ public interface IApplicationDbContext
     DbSet<CrmActivity> CrmActivities { get; }
 
     // Billing & Operations
+    DbSet<ServiceCategory> ServiceCategories { get; }
     DbSet<ServiceItem> Services { get; }
+    DbSet<PriceList> PriceLists { get; }
+    DbSet<PriceListItem> PriceListItems { get; }
+    DbSet<ServicePriceHistory> ServicePriceHistories { get; }
     DbSet<Quotation> Quotations { get; }
     DbSet<QuotationItem> QuotationItems { get; }
+    DbSet<QuotationApprovalHistory> QuotationApprovalHistories { get; }
+    DbSet<ContractTemplate> ContractTemplates { get; }
     DbSet<Contract> Contracts { get; }
     DbSet<ContractItem> ContractItems { get; }
+    DbSet<ContractAppendix> ContractAppendices { get; }
+    DbSet<ContractHistory> ContractHistories { get; }
+    DbSet<SignatureRequest> SignatureRequests { get; }
     DbSet<Project> Projects { get; }
     DbSet<PaymentSchedule> PaymentSchedules { get; }
     DbSet<Payment> Payments { get; }

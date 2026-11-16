@@ -21,6 +21,11 @@ public static class DatabaseSeeder
         {
             logger.LogInformation("Starting database seeding...");
 
+            await context.Database.ExecuteSqlRawAsync(@"
+                DROP INDEX IF EXISTS ""IX_quotations_QuotationNumber"";
+                CREATE UNIQUE INDEX IF NOT EXISTS ""IX_quotations_QuotationNumber_RevisionNumber"" ON quotations (""QuotationNumber"", ""RevisionNumber"");
+            ");
+
             // 1. Seed Permissions
             var existingPermissions = await context.Permissions.ToDictionaryAsync(p => p.Code, p => p);
             foreach (var (code, module, desc) in Permissions.AllPermissions)
@@ -622,6 +627,383 @@ public static class DatabaseSeeder
 
                     await context.SaveChangesAsync();
                 }
+            }
+
+            // 11. Seed Phase 4 Service Catalog, Price Lists, Contract Templates, Sample Quotation & Contract
+            if (!await context.ServiceCategories.AnyAsync())
+            {
+                logger.LogInformation("Seeding Phase 4 Service Catalog and Billing data...");
+
+                var catCloud = new ServiceCategory
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "CAT-CLOUD",
+                    Name = "Cloud & DevOps Solutions",
+                    Description = "Cloud migration, containerization, orchestration, and infrastructure as code.",
+                    OrderIndex = 1,
+                    IsActive = true
+                };
+
+                var catSoft = new ServiceCategory
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "CAT-SOFT",
+                    Name = "Custom Software Engineering",
+                    Description = "Full-stack web, mobile, and enterprise backend engineering services.",
+                    OrderIndex = 2,
+                    IsActive = true
+                };
+
+                var catSec = new ServiceCategory
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "CAT-SEC",
+                    Name = "Security & Compliance",
+                    Description = "Penetration testing, code audit, SOC2/ISO compliance consultation.",
+                    OrderIndex = 3,
+                    IsActive = true
+                };
+
+                context.ServiceCategories.AddRange(catCloud, catSoft, catSec);
+                await context.SaveChangesAsync();
+
+                // Services
+                var svcK8s = new ServiceItem
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "SVC-CLOUD-01",
+                    Name = "Kubernetes Architecture & GitOps Setup",
+                    CategoryId = catCloud.Id,
+                    Category = "Cloud",
+                    Unit = "Project",
+                    BasePrice = 50000000m,
+                    CostPrice = 30000000m,
+                    VatRate = 10m,
+                    Description = "Production Kubernetes cluster deployment with ArgoCD GitOps and observability.",
+                    IsActive = true
+                };
+
+                var svcMigrate = new ServiceItem
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "SVC-CLOUD-02",
+                    Name = "Multi-Cloud Migration Consultation",
+                    CategoryId = catCloud.Id,
+                    Category = "Cloud",
+                    Unit = "Project",
+                    BasePrice = 120000000m,
+                    CostPrice = 75000000m,
+                    VatRate = 10m,
+                    Description = "End-to-end cloud migration assessment, planning, data migration and cutover execution.",
+                    IsActive = true
+                };
+
+                var svcDevMonth = new ServiceItem
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "SVC-DEV-01",
+                    Name = "Full-stack Agile Engineering Team",
+                    CategoryId = catSoft.Id,
+                    Category = "Development",
+                    Unit = "Month",
+                    BasePrice = 85000000m,
+                    CostPrice = 55000000m,
+                    VatRate = 10m,
+                    Description = "Dedicated team of 1 Senior Full-stack Engineer, 1 QA and 1 Solution Architect.",
+                    IsActive = true
+                };
+
+                var svcApi = new ServiceItem
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "SVC-DEV-02",
+                    Name = "Enterprise API Gateway Integration",
+                    CategoryId = catSoft.Id,
+                    Category = "Development",
+                    Unit = "Project",
+                    BasePrice = 65000000m,
+                    CostPrice = 40000000m,
+                    VatRate = 10m,
+                    Description = "Design and build REST/gRPC API microservices with auth, throttling and monitoring.",
+                    IsActive = true
+                };
+
+                var svcPenTest = new ServiceItem
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "SVC-SEC-01",
+                    Name = "Web & Mobile Security Penetration Testing",
+                    CategoryId = catSec.Id,
+                    Category = "Security",
+                    Unit = "Assessment",
+                    BasePrice = 40000000m,
+                    CostPrice = 25000000m,
+                    VatRate = 10m,
+                    Description = "Blackbox & greybox security evaluation compliant with OWASP Top 10 standards.",
+                    IsActive = true
+                };
+
+                context.Services.AddRange(svcK8s, svcMigrate, svcDevMonth, svcApi, svcPenTest);
+
+                // Initial Price Histories
+                context.ServicePriceHistories.Add(new ServicePriceHistory
+                {
+                    ServiceId = svcK8s.Id,
+                    OldPrice = 0,
+                    NewPrice = svcK8s.BasePrice,
+                    ChangedByName = "System Seeder",
+                    EffectiveDate = DateTime.UtcNow,
+                    Reason = "Initial baseline catalog pricing"
+                });
+
+                context.ServicePriceHistories.Add(new ServicePriceHistory
+                {
+                    ServiceId = svcDevMonth.Id,
+                    OldPrice = 0,
+                    NewPrice = svcDevMonth.BasePrice,
+                    ChangedByName = "System Seeder",
+                    EffectiveDate = DateTime.UtcNow,
+                    Reason = "Initial baseline catalog pricing"
+                });
+
+                // Price Lists
+                var plStandard = new PriceList
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "PL-STD-2026",
+                    Name = "Standard Commercial Price List 2026",
+                    Description = "Default public catalog rate card for 2026 services.",
+                    Currency = "VND",
+                    StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)),
+                    EndDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)),
+                    IsDefault = true,
+                    IsActive = true
+                };
+
+                plStandard.Items.Add(new PriceListItem
+                {
+                    ServiceId = svcK8s.Id,
+                    UnitPrice = 50000000m,
+                    MinQuantity = 1,
+                    MaxDiscountRate = 10m
+                });
+                plStandard.Items.Add(new PriceListItem
+                {
+                    ServiceId = svcDevMonth.Id,
+                    UnitPrice = 85000000m,
+                    MinQuantity = 1,
+                    MaxDiscountRate = 15m
+                });
+
+                var plVip = new PriceList
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "PL-VIP-2026",
+                    Name = "Enterprise Strategic Partner Price List",
+                    Description = "Special negotiated rates for strategic enterprise accounts.",
+                    Currency = "VND",
+                    StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)),
+                    EndDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)),
+                    IsDefault = false,
+                    IsActive = true
+                };
+
+                plVip.Items.Add(new PriceListItem
+                {
+                    ServiceId = svcK8s.Id,
+                    UnitPrice = 42000000m,
+                    MinQuantity = 1,
+                    MaxDiscountRate = 20m
+                });
+                plVip.Items.Add(new PriceListItem
+                {
+                    ServiceId = svcDevMonth.Id,
+                    UnitPrice = 72000000m,
+                    MinQuantity = 3,
+                    MaxDiscountRate = 25m
+                });
+
+                context.PriceLists.AddRange(plStandard, plVip);
+
+                // Contract Templates
+                var tmplSow = new ContractTemplate
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "TMPL-SOW",
+                    Name = "Statement of Work (SOW) Standard",
+                    Category = "SOW",
+                    Description = "Standard technical statement of work agreement template.",
+                    Content = @"### STATEMENT OF WORK AGREEMENT
+
+**Contract Code:** {{ContractNumber}}  
+**Client:** {{CustomerName}} (Tax ID: {{TaxId}})  
+**Billing Address:** {{Address}}  
+**Attention:** {{ContactName}} ({{ContactEmail}})  
+
+---
+
+#### 1. ENGAGEMENT TIMELINE
+This engagement commences on **{{StartDate}}** and concludes on **{{EndDate}}**.
+
+#### 2. COMMERCIAL TERMS & TOTAL VALUE
+- Total Contract Value: **{{TotalValue}}**
+- Payment Terms: {{PaymentTerms}}
+
+#### 3. GOVERNING LAW & COMPLIANCE
+This agreement is governed by the laws of Vietnam. Any disputes shall be submitted to the competent commercial arbitration center.
+
+#### 4. SIGNATURES & ACCEPTANCE
+Both parties agree to execute this statement of work in digital and written format with full legal force.",
+                    IsDefault = true,
+                    IsActive = true
+                };
+
+                var tmplMsa = new ContractTemplate
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "TMPL-MSA",
+                    Name = "Master Services Agreement (MSA)",
+                    Category = "MSA",
+                    Description = "Comprehensive enterprise master services agreement framework.",
+                    Content = @"### MASTER SERVICES AGREEMENT
+
+**Agreement Reference:** {{ContractNumber}}  
+**Effective Date:** {{StartDate}} to {{EndDate}}  
+
+Between **ENTERPRISE CRM SERVICES INC.** and **{{CustomerName}}** (Tax Code: {{TaxId}}).
+
+#### 1. SCOPE OF MASTER AGREEMENT
+This Master Services Agreement sets forth the legal, financial and operational framework under which Provider shall deliver professional technology and cloud services to Client.
+
+#### 2. VALUE & PAYMENT SCHEDULE
+Total Value: **{{TotalValue}}**
+Terms: {{PaymentTerms}}
+
+#### 3. INTELLECTUAL PROPERTY & CONFIDENTIALITY
+All deliverables generated under this agreement shall be transferred to Client upon full settlement of contract fees.",
+                    IsDefault = false,
+                    IsActive = true
+                };
+
+                context.ContractTemplates.AddRange(tmplSow, tmplMsa);
+                await context.SaveChangesAsync();
+
+                // Seed Sample Approved Quotation & Contract if account exists
+                var sampleAccount = await context.Accounts.Include(a => a.Contacts).FirstOrDefaultAsync();
+                if (sampleAccount != null)
+                {
+                    var sampleContact = sampleAccount.Contacts.FirstOrDefault();
+
+                    var sampleQuote = new Quotation
+                    {
+                        Id = Guid.NewGuid(),
+                        QuotationNumber = $"QT-{DateTime.UtcNow:yyyyMMdd}-0001",
+                        Version = 1,
+                        RevisionNumber = "REV-01",
+                        AccountId = sampleAccount.Id,
+                        ContactId = sampleContact?.Id,
+                        PriceListId = plStandard.Id,
+                        ValidUntil = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+                        Subtotal = 135000000m,
+                        DiscountAmount = 10000000m,
+                        VatAmount = 12500000m,
+                        TotalAmount = 137500000m,
+                        Status = "Approved",
+                        TermsAndConditions = "Payment within 30 days of invoice date. Deliverables backed by 90-day warranty.",
+                        Notes = "Initial high-priority enterprise migration quote.",
+                        ApprovedAt = DateTime.UtcNow.AddDays(-2),
+                        ApprovalNotes = "Approved by Sales Director Elena Rostova."
+                    };
+
+                    sampleQuote.Items.Add(new QuotationItem
+                    {
+                        ServiceId = svcK8s.Id,
+                        ServiceCode = svcK8s.Code,
+                        ServiceName = svcK8s.Name,
+                        Unit = svcK8s.Unit,
+                        Quantity = 1,
+                        UnitPrice = 50000000m,
+                        DiscountRate = 10m,
+                        DiscountAmount = 5000000m,
+                        VatRate = 10m,
+                        VatAmount = 4500000m,
+                        LineTotal = 49500000m
+                    });
+
+                    sampleQuote.Items.Add(new QuotationItem
+                    {
+                        ServiceId = svcDevMonth.Id,
+                        ServiceCode = svcDevMonth.Code,
+                        ServiceName = svcDevMonth.Name,
+                        Unit = svcDevMonth.Unit,
+                        Quantity = 1,
+                        UnitPrice = 85000000m,
+                        DiscountRate = 5.88m,
+                        DiscountAmount = 5000000m,
+                        VatRate = 10m,
+                        VatAmount = 8000000m,
+                        LineTotal = 88000000m
+                    });
+
+                    sampleQuote.ApprovalHistories.Add(new QuotationApprovalHistory
+                    {
+                        Action = "Approved",
+                        ActorName = "Sales Director",
+                        Comments = "Commercial terms validated against Q4 targets.",
+                        Timestamp = DateTime.UtcNow.AddDays(-2)
+                    });
+
+                    context.Quotations.Add(sampleQuote);
+
+                    // Sample Contract
+                    var sampleContract = new Contract
+                    {
+                        Id = Guid.NewGuid(),
+                        ContractNumber = $"CTR-{DateTime.UtcNow:yyyyMMdd}-0001",
+                        Title = $"Kubernetes & Engineering SOW - {sampleAccount.Name}",
+                        AccountId = sampleAccount.Id,
+                        ContactId = sampleContact?.Id,
+                        QuotationId = sampleQuote.Id,
+                        TemplateId = tmplSow.Id,
+                        StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
+                        EndDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(6)),
+                        TotalValue = 137500000m,
+                        Status = ContractStatus.Signed,
+                        EsignStatus = "Signed",
+                        SignedAt = DateTime.UtcNow.AddDays(-1),
+                        SignedByClientName = sampleContact?.FullName ?? "Executive Client",
+                        SignedByClientEmail = sampleContact?.Email ?? "client@example.com",
+                        SignerIpAddress = "113.161.45.89",
+                        ScopeOfWork = "- Kubernetes Architecture & GitOps Setup\n- Full-stack Agile Engineering Team (1 Month)",
+                        PaymentTerms = "50% upfront, 50% upon deployment verification."
+                    };
+
+                    sampleContract.Items.Add(new ContractItem
+                    {
+                        ServiceId = svcK8s.Id,
+                        ServiceName = svcK8s.Name,
+                        ServiceCode = svcK8s.Code,
+                        Unit = svcK8s.Unit,
+                        Quantity = 1,
+                        UnitPrice = 50000000m,
+                        LineTotal = 49500000m
+                    });
+
+                    sampleContract.Histories.Add(new ContractHistory
+                    {
+                        Action = "Signed",
+                        OldStatus = ContractStatus.InReview.ToString(),
+                        NewStatus = ContractStatus.Signed.ToString(),
+                        ActorName = sampleContact?.FullName ?? "Executive Client",
+                        Notes = "Signed digitally via E-Signature portal.",
+                        Timestamp = DateTime.UtcNow.AddDays(-1)
+                    });
+
+                    context.Contracts.Add(sampleContract);
+                    await context.SaveChangesAsync();
+                }
+
+                logger.LogInformation("Phase 4 Service Catalog and Billing seeding completed.");
             }
 
             logger.LogInformation("Database seeding completed successfully.");
