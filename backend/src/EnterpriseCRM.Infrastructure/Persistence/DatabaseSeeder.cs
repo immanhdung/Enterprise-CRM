@@ -101,14 +101,16 @@ public static class DatabaseSeeder
             // Admin: All
             AssignPermissionsToRole(existingRoles[SystemRoles.Admin], Permissions.AllPermissions.Select(p => p.Code));
 
-            // CEO / BOD: High-level view, approve, reports
+            // CEO / BOD: High-level view, approve, reports, reconciliation
             AssignPermissionsToRole(existingRoles[SystemRoles.CeoBod], new[]
             {
                 Permissions.LeadsView, Permissions.CustomersView, Permissions.DealsView,
                 Permissions.QuotationsView, Permissions.QuotationsApprove,
                 Permissions.ContractsView, Permissions.ContractsApprove,
                 Permissions.ProjectsView, Permissions.InvoicesView, Permissions.InvoicesApprove,
-                Permissions.PaymentsView, Permissions.FinanceView, Permissions.FinanceExport,
+                Permissions.PaymentsView, Permissions.PaymentsReverse, Permissions.FinanceView, Permissions.FinanceExport,
+                Permissions.ReceivablesView, Permissions.ReceivablesManage,
+                Permissions.ReconciliationView, Permissions.ReconciliationManage,
                 Permissions.CommissionsView, Permissions.PayrollView, Permissions.EmployeesView,
                 Permissions.DepartmentsView, Permissions.TeamsView, Permissions.AuditView
             });
@@ -140,11 +142,13 @@ public static class DatabaseSeeder
                 Permissions.CommissionsView
             });
 
-            // Accountant: Invoices, Payments, Payroll, Finance
+            // Accountant: Invoices, Payments, Payroll, Finance, Phase 5 Receivables & Reconciliation
             AssignPermissionsToRole(existingRoles[SystemRoles.Accountant], new[]
             {
                 Permissions.InvoicesView, Permissions.InvoicesCreate, Permissions.InvoicesEdit, Permissions.InvoicesApprove, Permissions.InvoicesDelete,
-                Permissions.PaymentsView, Permissions.PaymentsCreate, Permissions.PaymentsVerify,
+                Permissions.PaymentsView, Permissions.PaymentsCreate, Permissions.PaymentsVerify, Permissions.PaymentsReverse,
+                Permissions.ReceivablesView, Permissions.ReceivablesManage,
+                Permissions.ReconciliationView, Permissions.ReconciliationManage,
                 Permissions.FinanceView, Permissions.FinanceExport,
                 Permissions.CommissionsView, Permissions.CommissionsManage,
                 Permissions.PayrollView, Permissions.PayrollProcess,
@@ -1004,6 +1008,166 @@ All deliverables generated under this agreement shall be transferred to Client u
                 }
 
                 logger.LogInformation("Phase 4 Service Catalog and Billing seeding completed.");
+            }
+
+            // 11. Seed Phase 5 Financial Management (Schedules, Payments, Invoices, Collection Logs)
+            if (!await context.PaymentSchedules.AnyAsync())
+            {
+                logger.LogInformation("Seeding Phase 5 Financial Management data...");
+                var signedContract = await context.Contracts
+                    .Include(c => c.Account)
+                    .FirstOrDefaultAsync(c => c.Status == ContractStatus.Signed || c.Status == ContractStatus.Active);
+
+                if (signedContract != null)
+                {
+                    // Installment 1: 30% Advance (Paid)
+                    var sched1 = new PaymentSchedule
+                    {
+                        Id = Guid.NewGuid(),
+                        ContractId = signedContract.Id,
+                        InstallmentNumber = 1,
+                        MilestoneTitle = "Advance Payment / Kickoff Milestone",
+                        Percentage = 30m,
+                        DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-15)),
+                        AmountDue = Math.Round(signedContract.TotalValue * 0.30m, 2),
+                        AmountPaid = Math.Round(signedContract.TotalValue * 0.30m, 2),
+                        Status = "Paid",
+                        Notes = "30% advance on contract signing."
+                    };
+
+                    // Installment 2: 40% Architecture & Implementation (Pending)
+                    var sched2 = new PaymentSchedule
+                    {
+                        Id = Guid.NewGuid(),
+                        ContractId = signedContract.Id,
+                        InstallmentNumber = 2,
+                        MilestoneTitle = "Phase 1 Prototype & Core Architecture",
+                        Percentage = 40m,
+                        DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(15)),
+                        AmountDue = Math.Round(signedContract.TotalValue * 0.40m, 2),
+                        AmountPaid = 0m,
+                        Status = "Pending",
+                        Notes = "40% upon architecture baseline signoff."
+                    };
+
+                    // Installment 3: 30% Final Acceptance & Handover (Pending)
+                    var sched3 = new PaymentSchedule
+                    {
+                        Id = Guid.NewGuid(),
+                        ContractId = signedContract.Id,
+                        InstallmentNumber = 3,
+                        MilestoneTitle = "Final Acceptance & Production Go-Live",
+                        Percentage = 30m,
+                        DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(60)),
+                        AmountDue = signedContract.TotalValue - sched1.AmountDue - sched2.AmountDue,
+                        AmountPaid = 0m,
+                        Status = "Pending",
+                        Notes = "30% upon final acceptance testing signoff."
+                    };
+
+                    context.PaymentSchedules.AddRange(sched1, sched2, sched3);
+
+                    // Seed Confirmed Payment for Sched 1
+                    var payment1 = new Payment
+                    {
+                        Id = Guid.NewGuid(),
+                        ContractId = signedContract.Id,
+                        AccountId = signedContract.AccountId,
+                        PaymentScheduleId = sched1.Id,
+                        PaymentNumber = $"PAY-{DateTime.UtcNow:yyyyMMdd}-0001",
+                        TransactionReference = "FT26315891290",
+                        Amount = sched1.AmountDue,
+                        PaymentDate = DateTime.UtcNow.AddDays(-14),
+                        PaymentMethod = PaymentMethod.BankTransfer,
+                        Status = "Confirmed",
+                        BankName = "Techcombank",
+                        BankAccountNumber = "19034567891011",
+                        SenderName = signedContract.Account.Name,
+                        Notes = "Wire transfer received for 30% kickoff milestone.",
+                        IsVerified = true,
+                        ConfirmedAt = DateTime.UtcNow.AddDays(-14),
+                        ConfirmedByName = "Head Accountant"
+                    };
+                    context.Payments.Add(payment1);
+
+                    // Seed Published Electronic Invoice for Sched 1
+                    var invoiceSubtotal = Math.Round(sched1.AmountDue / 1.08m, 2);
+                    var invoiceTax = sched1.AmountDue - invoiceSubtotal;
+                    var invoice1 = new Invoice
+                    {
+                        Id = Guid.NewGuid(),
+                        ContractId = signedContract.Id,
+                        AccountId = signedContract.AccountId,
+                        InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-0001",
+                        InvoiceSeries = $"1C{DateTime.UtcNow:yy}TBB",
+                        EInvoiceProvider = "Mock",
+                        ProviderTransactionId = $"EINV-MOCK-{Guid.NewGuid():N}",
+                        LookupCode = $"EIN-{DateTime.UtcNow:yyyyMMdd}-AB12CD",
+                        LookupUrl = "https://tracuu.einvoice.vn/lookup?code=EIN-20261117-AB12CD",
+                        CustomerName = signedContract.Account.Name,
+                        CustomerTaxCode = signedContract.Account.TaxCode ?? "0108923456",
+                        CustomerAddress = signedContract.Account.BillingAddress ?? "Hanoi, Vietnam",
+                        CustomerEmail = signedContract.Account.Email ?? "billing@example.com",
+                        IssueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-14)),
+                        Subtotal = invoiceSubtotal,
+                        TaxRate = 8.0m,
+                        TaxAmount = invoiceTax,
+                        TotalWithTax = sched1.AmountDue,
+                        Status = InvoiceStatus.Published,
+                        Items = new List<InvoiceItem>
+                        {
+                            new()
+                            {
+                                LineNumber = 1,
+                                Description = $"Thanh toán đợt 1 (30%) theo hợp đồng {signedContract.ContractNumber}",
+                                Unit = "Gói",
+                                Quantity = 1,
+                                UnitPrice = invoiceSubtotal,
+                                TaxRate = 8.0m,
+                                TaxAmount = invoiceTax,
+                                LineTotal = sched1.AmountDue
+                            }
+                        }
+                    };
+                    context.Invoices.Add(invoice1);
+
+                    // Seed an Overdue Schedule on the contract to test Receivables & Debt Aging
+                    var schedOverdue = new PaymentSchedule
+                    {
+                        Id = Guid.NewGuid(),
+                        ContractId = signedContract.Id,
+                        InstallmentNumber = 4,
+                        MilestoneTitle = "Q3 Infrastructure Maintenance Retainer",
+                        Percentage = 0m,
+                        DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-18)),
+                        AmountDue = 25000000m,
+                        AmountPaid = 0m,
+                        Status = "Pending",
+                        Notes = "Overdue maintenance retainer installment."
+                    };
+                    context.PaymentSchedules.Add(schedOverdue);
+
+                    // Seed Collection Log
+                    var collectionLog = new ReceivableCollectionLog
+                    {
+                        Id = Guid.NewGuid(),
+                        AccountId = signedContract.AccountId,
+                        ContractId = signedContract.Id,
+                        PaymentScheduleId = schedOverdue.Id,
+                        ActivityType = "Phone Call",
+                        Notes = "Contacted Finance Manager. Customer committed to wire transfer outstanding payment next week.",
+                        LoggedById = Guid.NewGuid(),
+                        LoggedByName = "Senior Accountant",
+                        LoggedAt = DateTime.UtcNow.AddDays(-2),
+                        NextFollowUpDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5)),
+                        Status = "Customer Promised Payment"
+                    };
+                    context.ReceivableCollectionLogs.Add(collectionLog);
+
+                    await context.SaveChangesAsync();
+                }
+
+                logger.LogInformation("Phase 5 Financial Management seeding completed.");
             }
 
             logger.LogInformation("Database seeding completed successfully.");

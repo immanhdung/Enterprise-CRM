@@ -37,6 +37,15 @@ public static class DependencyInjection
         services.AddScoped<EnterpriseCRM.Application.Features.ElectronicSignature.IElectronicSignatureProvider, MockElectronicSignatureProvider>();
         services.AddScoped<EnterpriseCRM.Application.Features.ElectronicSignature.IElectronicSignatureService, ElectronicSignatureService>();
 
+        // Phase 5 Finance & Project Management Services
+        services.AddScoped<EnterpriseCRM.Application.Features.Finance.IPaymentScheduleService, PaymentScheduleService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Finance.IPaymentService, PaymentService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Finance.IRevenueService, RevenueService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Finance.IReceivableService, ReceivableService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Finance.IElectronicInvoiceProvider, MockElectronicInvoiceProvider>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Finance.IInvoiceService, InvoiceService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.Finance.IFinancialReconciliationService, FinancialReconciliationService>();
+
         // Build Supabase PostgreSQL Connection String
         var connectionString = BuildPostgreSqlConnectionString(configuration);
 

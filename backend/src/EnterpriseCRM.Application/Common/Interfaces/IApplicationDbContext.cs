@@ -50,6 +50,10 @@ public interface IApplicationDbContext
     DbSet<Payment> Payments { get; }
     DbSet<InvoiceRequest> InvoiceRequests { get; }
     DbSet<Invoice> Invoices { get; }
+    DbSet<InvoiceItem> InvoiceItems { get; }
+    DbSet<ReceivableCollectionLog> ReceivableCollectionLogs { get; }
+    DbSet<FinancialReconciliationRecord> FinancialReconciliationRecords { get; }
+    DbSet<ReconciliationItem> ReconciliationItems { get; }
 
     // Performance, Payroll & Automation
     DbSet<Kpi> Kpis { get; }

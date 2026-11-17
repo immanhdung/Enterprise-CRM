@@ -1,8 +1,8 @@
 # Enterprise CRM – Database Schema & ERD Documentation
 
-> **Status (Phase 2):** ✅ Applied to Supabase PostgreSQL (`aws-0-ap-northeast-2.pooler.supabase.com`)  
-> **Initial Migration:** `20261115121722_InitialCreate`  
-> **Schema Execution:** 37 Tables Created with Soft Delete Query Filters, UTC Timestamps, Decimal(18,2) precision, and Indexes.
+> **Status (Phase 5):** ✅ Applied to Supabase PostgreSQL (`aws-0-ap-northeast-2.pooler.supabase.com`)  
+> **Migrations:** `20261115121722_InitialCreate`, `20261116135246_AddPhase4CrmEntities`, `20261117111212_AddPhase5FinanceManagement`  
+> **Schema Execution:** 40+ Tables with Soft Delete Query Filters, UTC Timestamps, Decimal(18,2) precision, Indexes, and Idempotent Constraints.
 
 ## 1. Overview & Database Standards
 
@@ -173,22 +173,52 @@ erDiagram
     - `status` (VARCHAR(30)) - `Planning`, `InProgress`, `OnHold`, `Completed`, `Cancelled`, `progress_percent` (INTEGER).
 26. **`payment_schedules`**:
     - `id` (UUID, PK), `contract_id` (UUID, FK -> contracts), `installment_number` (INTEGER),
-    - `due_date` (DATE), `amount_due` (DECIMAL(18,2)), `amount_paid` (DECIMAL(18,2) DEFAULT 0),
-    - `status` (VARCHAR(30)) - `Pending`, `PartiallyPaid`, `Paid`, `Overdue`.
+    - `title` (VARCHAR(200)), `percentage` (DECIMAL(5,2)), `due_date` (DATE),
+    - `amount_due` (DECIMAL(18,2)), `amount_paid` (DECIMAL(18,2) DEFAULT 0),
+    - `status` (VARCHAR(30)) - `Pending`, `PartiallyPaid`, `Paid`, `Overdue`, `notes` (TEXT).
 27. **`payments`**:
     - `id` (UUID, PK), `payment_schedule_id` (UUID, FK -> payment_schedules), `contract_id` (UUID, FK -> contracts),
     - `transaction_reference` (VARCHAR(100), UNIQUE), `amount` (DECIMAL(18,2)), `payment_date` (TIMESTAMPTZ),
     - `payment_method` (VARCHAR(50)) - `BankTransfer`, `CreditCard`, `Cash`, `Cheque`,
-    - `is_verified` (BOOLEAN DEFAULT TRUE), `verified_by` (UUID, FK -> users).
+    - `status` (VARCHAR(30)) - `Pending`, `Confirmed`, `Failed`, `Cancelled`, `Reversed`,
+    - `is_verified` (BOOLEAN DEFAULT TRUE), `verified_by` (UUID, FK -> users),
+    - `reversal_reason` (TEXT), `reversed_at` (TIMESTAMPTZ), `reversed_by` (UUID, FK -> users), `invoice_id` (UUID, FK -> invoices, NULLABLE).
 28. **`invoice_requests`**:
     - `id` (UUID, PK), `contract_id` (UUID, FK -> contracts), `payment_id` (UUID, FK -> payments, NULLABLE),
-    - `requested_by` (UUID, FK -> users), `amount` (DECIMAL(18,2)), `status` (VARCHAR(30)) - `Pending`, `Approved`, `Issued`, `Rejected`.
+    - `requested_by` (UUID, FK -> users), `amount` (DECIMAL(18,2)), `vat_rate` (DECIMAL(5,2) DEFAULT 8.0),
+    - `status` (VARCHAR(30)) - `Pending`, `Approved`, `Issued`, `Rejected`,
+    - `rejected_reason` (TEXT), `approved_by` (UUID, FK -> users), `approved_at` (TIMESTAMPTZ).
 29. **`invoices`**:
-    - `id` (UUID, PK), `invoice_request_id` (UUID, FK -> invoice_requests), `invoice_number` (VARCHAR(50), UNIQUE),
+    - `id` (UUID, PK), `invoice_request_id` (UUID, FK -> invoice_requests, NULLABLE), `contract_id` (UUID, FK -> contracts),
+    - `invoice_number` (VARCHAR(50), UNIQUE), `series` (VARCHAR(20)),
     - `e_invoice_provider` (VARCHAR(50)) - `MISA`, `VNPT`, `Viettel`, `Mock`,
-    - `provider_transaction_id` (VARCHAR(100)), `issue_date` (DATE), `tax_rate` (DECIMAL(5,2)), `tax_amount` (DECIMAL(18,2)),
+    - `provider_transaction_id` (VARCHAR(100)), `issue_date` (DATE),
+    - `subtotal_amount` (DECIMAL(18,2)), `tax_rate` (DECIMAL(5,2)), `tax_amount` (DECIMAL(18,2)),
     - `total_with_tax` (DECIMAL(18,2)), `xml_url` (VARCHAR(500)), `pdf_url` (VARCHAR(500)),
-    - `status` (VARCHAR(30)) - `Draft`, `Published`, `SentToCustomer`, `Cancelled`.
+    - `lookup_code` (VARCHAR(50)), `lookup_url` (VARCHAR(500)),
+    - `status` (VARCHAR(30)) - `Draft`, `Published`, `SentToCustomer`, `Cancelled`,
+    - `cancellation_reason` (TEXT), `cancelled_at` (TIMESTAMPTZ), `cancelled_by` (UUID, FK -> users).
+30. **`invoice_items`**:
+    - `id` (UUID, PK), `invoice_id` (UUID, FK -> invoices), `item_name` (VARCHAR(255)),
+    - `unit` (VARCHAR(50)), `quantity` (DECIMAL(10,2)), `unit_price` (DECIMAL(18,2)), `total_price` (DECIMAL(18,2)).
+31. **`receivable_collection_logs`**:
+    - `id` (UUID, PK), `account_id` (UUID, FK -> accounts), `contract_id` (UUID, FK -> contracts),
+    - `payment_schedule_id` (UUID, FK -> payment_schedules, NULLABLE), `collector_id` (UUID, FK -> users),
+    - `activity_type` (VARCHAR(50)) - `Phone Call`, `Email Reminder`, `Formal Notice`, `Direct Meeting`,
+    - `notes` (TEXT), `next_follow_up_date` (DATE), `status` (VARCHAR(50)), `logged_at` (TIMESTAMPTZ).
+32. **`financial_reconciliation_records`**:
+    - `id` (UUID, PK), `reconciliation_code` (VARCHAR(50), UNIQUE), `start_date` (DATE), `end_date` (DATE),
+    - `total_contract_value` (DECIMAL(18,2)), `total_invoiced_amount` (DECIMAL(18,2)), `total_collected_amount` (DECIMAL(18,2)),
+    - `status` (VARCHAR(30)) - `Completed`, `DiscrepancyFound`, `Approved`,
+    - `run_by` (UUID, FK -> users), `run_at` (TIMESTAMPTZ), `summary_notes` (TEXT).
+33. **`reconciliation_items`**:
+    - `id` (UUID, PK), `reconciliation_record_id` (UUID, FK -> financial_reconciliation_records),
+    - `contract_id` (UUID, FK -> contracts), `payment_id` (UUID, FK -> payments, NULLABLE),
+    - `invoice_id` (UUID, FK -> invoices, NULLABLE),
+    - `discrepancy_type` (VARCHAR(50)) - `MissingPayment`, `UnmatchedInvoice`, `AmountMismatch`, `DuplicateTransaction`,
+    - `discrepancy_amount` (DECIMAL(18,2)), `description` (TEXT),
+    - `status` (VARCHAR(30)) - `Unresolved`, `ConfirmedAdjustment`, `Dismissed`,
+    - `resolution_notes` (TEXT), `resolved_by` (UUID, FK -> users, NULLABLE), `resolved_at` (TIMESTAMPTZ).
 
 ### 3.6 Sales Performance, Commissions & Payroll
 30. **`kpis`**:

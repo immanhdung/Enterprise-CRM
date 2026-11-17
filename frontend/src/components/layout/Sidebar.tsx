@@ -21,6 +21,10 @@ import {
   Layers,
   Tag,
   FileText,
+  CreditCard,
+  TrendingUp,
+  Scale,
+  AlertCircle,
 } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -63,7 +67,18 @@ const navigationGroups: NavGroup[] = [
       { name: 'Contracts & E-Sign', path: '/contracts', icon: FileCheck },
       { name: 'Contract Templates', path: '/contract-templates', icon: FileText },
       { name: 'Projects', path: '/projects', icon: Briefcase },
-      { name: 'Finance & Invoices', path: '/finance', icon: Receipt, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant'] },
+    ],
+  },
+  {
+    title: 'FINANCE & BILLING',
+    items: [
+      { name: 'Finance Overview', path: '/finance', icon: Receipt, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant', 'Manager'] },
+      { name: 'Contract Schedules', path: '/finance/contracts', icon: FileCheck, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant', 'Manager'] },
+      { name: 'Payments & Cash', path: '/finance/payments', icon: CreditCard, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant', 'Manager'] },
+      { name: 'E-Invoices', path: '/finance/invoices', icon: Receipt, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant', 'Manager'] },
+      { name: 'Debt & Aging', path: '/finance/receivables', icon: AlertCircle, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant', 'Manager'] },
+      { name: 'Revenue Analytics', path: '/finance/revenue', icon: TrendingUp, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant', 'Manager'] },
+      { name: 'Reconciliation', path: '/finance/reconciliation', icon: Scale, requiredRoles: ['Admin', 'CEO_BOD', 'Accountant'] },
     ],
   },
   {

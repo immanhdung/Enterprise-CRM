@@ -1176,11 +1176,20 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.ToTable("employees", (string)null);
                 });
 
-            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Invoice", b =>
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.FinancialReconciliationRecord", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ApprovedByName")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1194,16 +1203,127 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("DiscrepancyAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Period")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("ReconciledById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ReconciledByName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("ReconciliationDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalCollectedRevenue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TotalContractValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TotalExpectedRevenue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TotalInvoicedRevenue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("financial_reconciliation_records", (string)null);
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Invoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerAddress")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerTaxCode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("EInvoiceProvider")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasColumnType("text");
+
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<Guid?>("InvoiceRequestId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("InvoiceSeries")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -1211,14 +1331,27 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly>("IssueDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("LookupCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LookupUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("PdfUrl")
                         .HasColumnType("text");
 
                     b.Property<string>("ProviderTransactionId")
                         .HasColumnType("text");
 
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<decimal>("TaxAmount")
                         .HasPrecision(18, 2)
@@ -1243,18 +1376,99 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("ContractId");
+
                     b.HasIndex("InvoiceNumber")
                         .IsUnique();
 
-                    b.HasIndex("InvoiceRequestId");
+                    b.HasIndex("InvoiceRequestId")
+                        .IsUnique();
 
                     b.ToTable("invoices", (string)null);
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.InvoiceItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LineNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<Guid?>("ServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("invoice_items", (string)null);
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.InvoiceRequest", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
@@ -1279,15 +1493,26 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("PaymentId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("RequestedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("RequestedByName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1296,6 +1521,8 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("ContractId");
 
@@ -1651,9 +1878,36 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankAccountNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CancelledById")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ConfirmedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConfirmedByName")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("ContractId")
                         .HasColumnType("uuid");
@@ -1676,18 +1930,38 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("integer");
 
+                    b.Property<string>("PaymentNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<Guid?>("PaymentScheduleId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ReversalReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SenderName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<string>("TransactionReference")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1700,12 +1974,14 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AccountId");
+
                     b.HasIndex("ContractId");
 
-                    b.HasIndex("PaymentScheduleId");
-
-                    b.HasIndex("TransactionReference")
+                    b.HasIndex("PaymentNumber")
                         .IsUnique();
+
+                    b.HasIndex("PaymentScheduleId");
 
                     b.ToTable("payments", (string)null);
                 });
@@ -1747,6 +2023,18 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("MilestoneTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Percentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -2362,7 +2650,7 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PriceListId");
 
-                    b.HasIndex("QuotationNumber")
+                    b.HasIndex("QuotationNumber", "RevisionNumber")
                         .IsUnique();
 
                     b.ToTable("quotations", (string)null);
@@ -2506,6 +2794,161 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("quotation_items", (string)null);
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.ReceivableCollectionLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid?>("AssignedToUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AssignedToUserName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LoggedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LoggedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LoggedByName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("NextFollowUpDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("PaymentScheduleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("ContractId");
+
+                    b.HasIndex("PaymentScheduleId");
+
+                    b.ToTable("receivable_collection_logs", (string)null);
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.ReconciliationItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ActualAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid?>("ContractId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Difference")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("DiscrepancyType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("ExpectedAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ReconciliationRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResolutionStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("ReconciliationRecordId");
+
+                    b.ToTable("reconciliation_items", (string)null);
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Role", b =>
@@ -3431,24 +3874,68 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Invoice", b =>
                 {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", "Account")
+                        .WithMany("Invoices")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Contract", "Contract")
+                        .WithMany("Invoices")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EnterpriseCRM.Domain.Entities.InvoiceRequest", "InvoiceRequest")
-                        .WithMany()
-                        .HasForeignKey("InvoiceRequestId");
+                        .WithOne("IssuedInvoice")
+                        .HasForeignKey("EnterpriseCRM.Domain.Entities.Invoice", "InvoiceRequestId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Contract");
 
                     b.Navigation("InvoiceRequest");
                 });
 
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.InvoiceItem", b =>
+                {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Invoice", "Invoice")
+                        .WithMany("Items")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.ServiceItem", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.InvoiceRequest", b =>
                 {
-                    b.HasOne("EnterpriseCRM.Domain.Entities.Contract", "Contract")
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", "Account")
                         .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Contract", "Contract")
+                        .WithMany("InvoiceRequests")
                         .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("EnterpriseCRM.Domain.Entities.Payment", "Payment")
                         .WithMany()
-                        .HasForeignKey("PaymentId");
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Account");
 
                     b.Navigation("Contract");
 
@@ -3531,8 +4018,14 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Payment", b =>
                 {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", "Account")
+                        .WithMany("Payments")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EnterpriseCRM.Domain.Entities.Contract", "Contract")
-                        .WithMany()
+                        .WithMany("Payments")
                         .HasForeignKey("ContractId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -3541,6 +4034,8 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                         .WithMany("Payments")
                         .HasForeignKey("PaymentScheduleId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Account");
 
                     b.Navigation("Contract");
 
@@ -3695,6 +4190,64 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.ReceivableCollectionLog", b =>
+                {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Contract", "Contract")
+                        .WithMany()
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.PaymentSchedule", "PaymentSchedule")
+                        .WithMany()
+                        .HasForeignKey("PaymentScheduleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Contract");
+
+                    b.Navigation("PaymentSchedule");
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.ReconciliationItem", b =>
+                {
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Contract", "Contract")
+                        .WithMany()
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EnterpriseCRM.Domain.Entities.FinancialReconciliationRecord", "ReconciliationRecord")
+                        .WithMany("Items")
+                        .HasForeignKey("ReconciliationRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Payment");
+
+                    b.Navigation("ReconciliationRecord");
+                });
+
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.RolePermission", b =>
                 {
                     b.HasOne("EnterpriseCRM.Domain.Entities.Permission", "Permission")
@@ -3828,6 +4381,10 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Deals");
 
+                    b.Navigation("Invoices");
+
+                    b.Navigation("Payments");
+
                     b.Navigation("Projects");
 
                     b.Navigation("Quotations");
@@ -3848,9 +4405,15 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Histories");
 
+                    b.Navigation("InvoiceRequests");
+
+                    b.Navigation("Invoices");
+
                     b.Navigation("Items");
 
                     b.Navigation("PaymentSchedules");
+
+                    b.Navigation("Payments");
 
                     b.Navigation("Projects");
 
@@ -3876,6 +4439,21 @@ namespace EnterpriseCRM.Infrastructure.Persistence.Migrations
                     b.Navigation("Employees");
 
                     b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.FinancialReconciliationRecord", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Invoice", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("EnterpriseCRM.Domain.Entities.InvoiceRequest", b =>
+                {
+                    b.Navigation("IssuedInvoice");
                 });
 
             modelBuilder.Entity("EnterpriseCRM.Domain.Entities.Lead", b =>

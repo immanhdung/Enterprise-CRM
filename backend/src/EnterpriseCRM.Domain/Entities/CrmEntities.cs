@@ -92,6 +92,8 @@ public class Account : BaseEntity, IAuditableEntity, ISoftDeletable
     public ICollection<Quotation> Quotations { get; set; } = new List<Quotation>();
     public ICollection<Contract> Contracts { get; set; } = new List<Contract>();
     public ICollection<Project> Projects { get; set; } = new List<Project>();
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 }
 
 public class Contact : BaseEntity, IAuditableEntity, ISoftDeletable

@@ -29,6 +29,16 @@ import { ContractsPage } from '@/features/contracts/ContractsPage';
 import { ContractDetailPage } from '@/features/contracts/ContractDetailPage';
 import { ContractTemplatesPage } from '@/features/contracts/ContractTemplatesPage';
 
+// Phase 5 Finance & Project Management Pages
+import { FinanceDashboardPage } from '@/features/finance/FinanceDashboardPage';
+import { ContractFinancePage } from '@/features/finance/ContractFinancePage';
+import { PaymentsPage } from '@/features/finance/PaymentsPage';
+import { InvoicesPage } from '@/features/finance/InvoicesPage';
+import { ReceivablesPage } from '@/features/finance/ReceivablesPage';
+import { CustomerReceivableDetailPage } from '@/features/finance/CustomerReceivableDetailPage';
+import { RevenueAnalyticsPage } from '@/features/finance/RevenueAnalyticsPage';
+import { ReconciliationPage } from '@/features/finance/ReconciliationPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -95,16 +105,68 @@ export function App() {
                 }
               />
 
-              {/* Role Restricted Routes */}
+              {/* Phase 5 Finance & Project Management */}
               <Route
                 path="/finance"
                 element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant', 'Manager']}>
+                    <FinanceDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/contracts"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant', 'Manager']}>
+                    <ContractFinancePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/payments"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant', 'Manager']}>
+                    <PaymentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/invoices"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant', 'Manager']}>
+                    <InvoicesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/receivables"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant', 'Manager']}>
+                    <ReceivablesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/receivables/:id"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant', 'Manager']}>
+                    <CustomerReceivableDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/revenue"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant', 'Manager']}>
+                    <RevenueAnalyticsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/reconciliation"
+                element={
                   <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Accountant']}>
-                    <FeaturePlaceholder
-                      title="Finance & Invoices"
-                      description="Multi-installment payment schedules, cash collection reconciliation, debt aging reports, and E-Invoice provider adapters."
-                      phase="Phase 4 (Operations)"
-                    />
+                    <ReconciliationPage />
                   </ProtectedRoute>
                 }
               />

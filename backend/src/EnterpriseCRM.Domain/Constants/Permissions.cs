@@ -61,6 +61,13 @@ public static class Permissions
     public const string PaymentsView = "payments:view";
     public const string PaymentsCreate = "payments:create";
     public const string PaymentsVerify = "payments:verify";
+    public const string PaymentsReverse = "payments:reverse";
+
+    public const string ReceivablesView = "receivables:view";
+    public const string ReceivablesManage = "receivables:manage";
+
+    public const string ReconciliationView = "reconciliation:view";
+    public const string ReconciliationManage = "reconciliation:manage";
 
     // Finance, Commissions & Payroll Module
     public const string FinanceView = "finance:view";
@@ -149,6 +156,13 @@ public static class Permissions
         (PaymentsView, "Payments", "View payment records"),
         (PaymentsCreate, "Payments", "Record incoming payments"),
         (PaymentsVerify, "Payments", "Verify and reconcile payments"),
+        (PaymentsReverse, "Payments", "Cancel or reverse verified payments"),
+
+        (ReceivablesView, "Receivables", "View accounts receivable and aging reports"),
+        (ReceivablesManage, "Receivables", "Manage collection logs and debt follow-ups"),
+
+        (ReconciliationView, "Reconciliation", "View financial reconciliation reports"),
+        (ReconciliationManage, "Reconciliation", "Execute reconciliation and resolve discrepancies"),
 
         (FinanceView, "Finance", "View financial reports and dashboard"),
         (FinanceExport, "Finance", "Export financial statements"),

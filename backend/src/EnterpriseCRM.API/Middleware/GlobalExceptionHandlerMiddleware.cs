@@ -31,11 +31,26 @@ public class GlobalExceptionHandlerMiddleware
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+        var statusCode = exception switch
+        {
+            FluentValidation.ValidationException => HttpStatusCode.BadRequest,
+            InvalidOperationException => HttpStatusCode.BadRequest,
+            ArgumentException => HttpStatusCode.BadRequest,
+            KeyNotFoundException => HttpStatusCode.NotFound,
+            UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+            _ => HttpStatusCode.InternalServerError
+        };
+
+        context.Response.StatusCode = (int)statusCode;
+
+        var message = statusCode == HttpStatusCode.InternalServerError
+            ? "An unexpected server error occurred. Please contact the administrator."
+            : exception.Message;
 
         var response = ApiResponse<string>.Failed(
             error: exception.Message,
-            message: "An unexpected server error occurred. Please contact the administrator.");
+            message: message);
 
         var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
         {

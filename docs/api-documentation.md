@@ -119,13 +119,40 @@ Error response (RFC 7807):
 - `POST /api/v1/contracts/{id}/esign/send` – Dispatch for electronic signature via adapter.
 - `POST /api/v1/contracts/{id}/appendices` – Add contract appendix.
 
-### 2.8 Projects, Invoices & Debt (`/api/v1/projects`, `/api/v1/finance`, `/api/v1/invoices`)
-- `GET /api/v1/projects` – Track delivery milestones and progress.
-- `GET /api/v1/finance/schedules` – Payment schedule milestones.
-- `POST /api/v1/finance/payments` – Record incoming payment with bank transaction code.
-- `GET /api/v1/finance/debt-aging` – Aging report (0–30 days, 31–60 days, 60+ days overdue).
-- `POST /api/v1/invoices/requests` – Create invoice request for finance department.
-- `POST /api/v1/invoices/{id}/sync-provider` – Synchronize e-invoice status with MISA/VNPT/Viettel adapter.
+### 2.8 Projects, Invoices & Debt (`/api/v1/payment-schedules`, `/api/v1/payments`, `/api/v1/invoices`, `/api/v1/finance`)
+- **Payment Schedules (`/api/v1/payment-schedules`)**:
+  - `GET /api/v1/payment-schedules/contract/{contractId}` – Retrieve installment schedule for a contract.
+  - `POST /api/v1/payment-schedules/generate` – Auto-calculate and create multi-installment milestone schedules (e.g. 30/40/30) enforcing 100% total allocation.
+  - `POST /api/v1/payment-schedules` – Create individual payment schedule milestone.
+  - `PUT /api/v1/payment-schedules/{id}` – Update milestone details, due date, or notes.
+  - `DELETE /api/v1/payment-schedules/{id}` – Remove unpaid milestone schedule.
+- **Payment Management (`/api/v1/payments`)**:
+  - `GET /api/v1/payments` – Paginated payment transactions with search, date, contract, and status filters.
+  - `GET /api/v1/payments/{id}` – Payment details, verification metadata, and associated invoice.
+  - `POST /api/v1/payments` – Record incoming payment linked to contract/milestone.
+  - `POST /api/v1/payments/{id}/confirm` – Verify and confirm payment (transitions to `Confirmed`, updates schedule `amountPaid` and contract cash collection).
+  - `POST /api/v1/payments/{id}/reverse` – Reverse payment with mandatory audit reason (transitions to `Reversed`, decrements schedule `amountPaid`, re-opens milestones).
+  - `GET /api/v1/payments/contract/{contractId}/summary` – Contract financial summary (Total Value, Paid, Outstanding, Invoiced, Schedules).
+- **Electronic Invoicing (`/api/v1/invoices`)**:
+  - `GET /api/v1/invoices` – List e-invoices with search, provider, and status filters.
+  - `GET /api/v1/invoices/{id}` – E-invoice details with line items, tax rate, and lookup credentials.
+  - `POST /api/v1/invoices` – Issue VAT electronic invoice with automated series (`1C26TBB`) and provider lookup code.
+  - `GET /api/v1/invoices/{id}/pdf` – Download or stream rendered PDF invoice.
+  - `POST /api/v1/invoices/{id}/sync` – Synchronize status with external provider (MISA, VNPT, Viettel).
+  - `POST /api/v1/invoices/{id}/cancel` – Cancel published e-invoice with required cancellation reason.
+  - `GET /api/v1/invoices/requests` – List sales invoice requests with status filter.
+  - `POST /api/v1/invoices/requests` – Submit invoice request for accountant review.
+  - `POST /api/v1/invoices/requests/{id}/approve` – Approve request and issue invoice.
+  - `POST /api/v1/invoices/requests/{id}/reject` – Reject request with justification reason.
+- **Finance Analytics, Receivables & Reconciliation (`/api/v1/finance`)**:
+  - `GET /api/v1/finance/revenue` – Multi-dimensional revenue analytics (Timeline Daily/Monthly/Quarterly/Yearly, Customer, Contract, Sales Employee, Service Category).
+  - `GET /api/v1/finance/receivables` – Receivables items with aging brackets (`Current`, `1-7 Days Overdue`, `8-30 Days Overdue`, `31-60 Days Overdue`, `>60 Days Overdue`).
+  - `GET /api/v1/finance/receivables/summary` – Aggregate debt aging summary cards for financial KPI tracking.
+  - `GET /api/v1/finance/collection-logs` – Log history of debt collection efforts (phone calls, email reminders, formal notices, direct meetings).
+  - `POST /api/v1/finance/collection-logs` – Record customer collection activity with follow-up date and outcome status.
+  - `GET /api/v1/finance/reconciliation` – List executed cross-reconciliation records and discrepancy reports.
+  - `POST /api/v1/finance/reconciliation/run` – Execute cross-reconciliation engine (Contracts vs. Invoiced vs. Collected Cash).
+  - `POST /api/v1/finance/reconciliation/items/{id}/resolve` – Authorized discrepancy resolution (`ConfirmAdjustment` or `Dismiss`) with mandatory audit notes.
 
 ### 2.9 Performance, Commission & Payroll (`/api/v1/commissions`, `/api/v1/payroll`, `/api/v1/kpis`)
 - `GET /api/v1/kpis` – Sales target vs. achieved metrics per employee, team, department.

@@ -5,7 +5,10 @@
 > **Implementation Progress:**
 > - **Phase 1 (Foundation):** Complete ✅
 > - **Phase 2 (Database, Authentication & RBAC):** Complete ✅ (37 Tables in Supabase, PBKDF2 Hashing, JWT + Refresh Token Rotation, 5 System Roles, 38 Permissions, Full Org Management, React 19 Login & Protected Routes).
-> - **Test Suite:** 21 Automated Tests Passing (11 Unit Tests + 10 Integration Tests against live Supabase PostgreSQL).
+> - **Phase 3 (Core CRM - Leads, Customers, Deals & Pipeline):** Complete ✅ (Lead management with round-robin/workload assignment, 360° Account profile, Contacts, Kanban Deal Pipeline with `@dnd-kit`, Task & Activity timeline, Excel/CSV import-export).
+> - **Phase 4 (Quotation & Contract Management - CPQ):** Complete ✅ (Service catalog, dynamic line-item quotations with VAT & discounts, approval workflows, PDF export, contract generation, appendices, and e-signature provider abstraction).
+> - **Phase 5 (Project & Finance Management):** Complete ✅ (Installment payment schedules e.g. 30/40/30, payment transactions with reversal audit trail, multi-dimensional revenue analytics, debt aging brackets 1-7d, 8-30d, 31-60d, >60d, collection activity logging, electronic invoice issuance & synchronization with mock MISA/VNPT/Viettel provider, financial cross-reconciliation engine with discrepancy resolution).
+> - **Test Suite:** 34 Automated Tests Passing (11 Unit Tests + 23 Integration Tests against live Supabase PostgreSQL).
 
 The Enterprise CRM is a robust, modular, multi-tenant-ready Web Application designed specifically for modern service-oriented enterprises (consulting, digital agencies, professional services, B2B technology providers). The platform centralizes end-to-end customer lifecycles—from omnichannel Lead acquisition and automated distribution, to Deal pipeline management, CPQ (Configure, Price, Quote), contract lifecycle and e-signing, project/milestone tracking, invoice issuance and debt collection, sales commission and payroll calculation, and an AI-powered executive co-pilot.
 

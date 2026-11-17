@@ -55,6 +55,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<InvoiceRequest> InvoiceRequests => Set<InvoiceRequest>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+    public DbSet<ReceivableCollectionLog> ReceivableCollectionLogs => Set<ReceivableCollectionLog>();
+    public DbSet<FinancialReconciliationRecord> FinancialReconciliationRecords => Set<FinancialReconciliationRecord>();
+    public DbSet<ReconciliationItem> ReconciliationItems => Set<ReconciliationItem>();
 
     // Performance, Payroll & Automation
     public DbSet<Kpi> Kpis => Set<Kpi>();
@@ -96,6 +100,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<Payment>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<InvoiceRequest>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Invoice>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ReceivableCollectionLog>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<FinancialReconciliationRecord>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CommissionPolicy>().HasQueryFilter(e => !e.IsDeleted);
 
         // User Configuration
@@ -481,6 +487,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             entity.ToTable("payment_schedules");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.MilestoneTitle).HasMaxLength(200);
+            entity.Property(e => e.Percentage).HasPrecision(5, 2);
             entity.Property(e => e.AmountDue).HasPrecision(18, 2);
             entity.Property(e => e.AmountPaid).HasPrecision(18, 2);
             entity.HasOne(e => e.Contract).WithMany(c => c.PaymentSchedules).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Cascade);
@@ -490,9 +498,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             entity.ToTable("payments");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.TransactionReference).IsUnique();
+            entity.HasIndex(e => e.PaymentNumber).IsUnique();
+            entity.Property(e => e.PaymentNumber).HasMaxLength(50);
+            entity.Property(e => e.TransactionReference).HasMaxLength(100);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
-            entity.HasOne(e => e.Contract).WithMany().HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Restrict);
+            entity.Property(e => e.Status).HasMaxLength(30).IsRequired();
+            entity.HasOne(e => e.Contract).WithMany(c => c.Payments).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Account).WithMany(a => a.Payments).HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(e => e.PaymentSchedule).WithMany(s => s.Payments).HasForeignKey(e => e.PaymentScheduleId).OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -501,6 +513,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.ToTable("invoice_requests");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.Status).HasMaxLength(30).IsRequired();
+            entity.HasOne(e => e.Contract).WithMany(c => c.InvoiceRequests).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Account).WithMany().HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Payment).WithMany().HasForeignKey(e => e.PaymentId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Invoice>(entity =>
@@ -508,9 +524,64 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.ToTable("invoices");
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+            entity.Property(e => e.InvoiceNumber).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.InvoiceSeries).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
             entity.Property(e => e.TaxRate).HasPrecision(5, 2);
             entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
             entity.Property(e => e.TotalWithTax).HasPrecision(18, 2);
+            entity.HasOne(e => e.Contract).WithMany(c => c.Invoices).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Account).WithMany(a => a.Invoices).HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.InvoiceRequest).WithOne(r => r.IssuedInvoice).HasForeignKey<Invoice>(e => e.InvoiceRequestId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<InvoiceItem>(entity =>
+        {
+            entity.ToTable("invoice_items");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Quantity).HasPrecision(10, 2);
+            entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(5, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.LineTotal).HasPrecision(18, 2);
+            entity.HasOne(e => e.Invoice).WithMany(i => i.Items).HasForeignKey(e => e.InvoiceId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Service).WithMany().HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ReceivableCollectionLog>(entity =>
+        {
+            entity.ToTable("receivable_collection_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ActivityType).HasMaxLength(50).IsRequired();
+            entity.HasOne(e => e.Contract).WithMany().HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Account).WithMany().HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.PaymentSchedule).WithMany().HasForeignKey(e => e.PaymentScheduleId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<FinancialReconciliationRecord>(entity =>
+        {
+            entity.ToTable("financial_reconciliation_records");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Period).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.TotalContractValue).HasPrecision(18, 2);
+            entity.Property(e => e.TotalExpectedRevenue).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCollectedRevenue).HasPrecision(18, 2);
+            entity.Property(e => e.TotalInvoicedRevenue).HasPrecision(18, 2);
+            entity.Property(e => e.DiscrepancyAmount).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<ReconciliationItem>(entity =>
+        {
+            entity.ToTable("reconciliation_items");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DiscrepancyType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ExpectedAmount).HasPrecision(18, 2);
+            entity.Property(e => e.ActualAmount).HasPrecision(18, 2);
+            entity.Property(e => e.Difference).HasPrecision(18, 2);
+            entity.HasOne(e => e.ReconciliationRecord).WithMany(r => r.Items).HasForeignKey(e => e.ReconciliationRecordId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Contract).WithMany().HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Payment).WithMany().HasForeignKey(e => e.PaymentId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Invoice).WithMany().HasForeignKey(e => e.InvoiceId).OnDelete(DeleteBehavior.SetNull);
         });
 
         // Performance & Payroll
