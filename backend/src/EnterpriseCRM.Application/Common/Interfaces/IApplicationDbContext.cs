@@ -68,7 +68,22 @@ public interface IApplicationDbContext
     DbSet<CompensationAuditLog> CompensationAuditLogs { get; }
     DbSet<WorkflowDefinition> WorkflowDefinitions { get; }
     DbSet<WorkflowExecution> WorkflowExecutions { get; }
+    DbSet<WorkflowExecutionLog> WorkflowExecutionLogs { get; }
     DbSet<Notification> Notifications { get; }
+    DbSet<LeadAssignmentRule> LeadAssignmentRules { get; }
+    DbSet<LeadAssignmentLog> LeadAssignmentLogs { get; }
+    DbSet<AlertRule> AlertRules { get; }
+    DbSet<BusinessAlert> BusinessAlerts { get; }
+    DbSet<NotificationPreference> NotificationPreferences { get; }
+    DbSet<AiConversation> AiConversations { get; }
+    DbSet<AiConversationMessage> AiConversationMessages { get; }
+    DbSet<AiProviderConfiguration> AiProviderConfigurations { get; }
+    DbSet<AiUsageLog> AiUsageLogs { get; }
+    DbSet<RevenueForecast> RevenueForecasts { get; }
+    DbSet<AnomalyDetection> AnomalyDetections { get; }
+    DbSet<BusinessRecommendation> BusinessRecommendations { get; }
+    DbSet<ScheduledReport> ScheduledReports { get; }
+    DbSet<GeneratedReport> GeneratedReports { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

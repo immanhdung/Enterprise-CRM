@@ -13,9 +13,9 @@ gantt
     Phase 4: CPQ - Service Catalog, Quotes & Contracts:done, p4, 2026-11-16, 1d
     Phase 5: Project & Finance Management            :done, p5, 2026-11-17, 1d
     Phase 6: Sales Performance, KPIs & Payroll       :done, p6, 2026-11-26, 1d
+    Phase 7: Automation & AI Intelligence            :done, p7, 2026-11-26, 1d
     section Next Phases
-    Phase 7: Automation & Background Jobs (Hangfire) :p7, 2026-11-27, 2d
-    Phase 8: AI Co-pilot & Final Hardening           :p8, 2026-11-29, 2d
+    Phase 8: System Governance & Administration      :p8, 2026-11-29, 2d
 ```
 
 ---
@@ -64,8 +64,17 @@ gantt
 - **Module G – Frontend Implementation**: Complete React 19 + TypeScript + Vite suite with 13 dedicated pages under `/performance/*`, `/commissions/*`, `/bonuses/*`, `/payroll/*`, full sidebar integration, and printable employee payslip statement.
 - **Module H – Automated Testing**: Comprehensive unit tests covering weighted KPI blending, commission calculations, tiered rate selection, max cap enforcement, manual adjustments, gross/net aggregation, and anti-self-approval enforcement with 100% pass rate.
 
-### Phase 7: Automation & Background Jobs (Hangfire) (Upcoming)
-- **Hangfire Background Engine**: Automated follow-up reminders, stagnant lead alerts, overdue debt notifications, scheduled reports.
+### Phase 7: Automation & AI Intelligence (Completed ✅)
+- **Module A – Workflow Automation Engine**: Event-driven rules (`workflow_definitions`, `workflow_executions`, `workflow_execution_logs`), triggers (`LeadCreated`, `DealWon`, `PaymentOverdue`, `ContractSigned`), condition evaluation engine (AND/OR, Equals, GreaterThan, LessThan, Contains), automated actions (`AssignLead`, `CreateTask`, `SendNotification`, `SendEmail`).
+- **Module B – Automatic Lead Distribution**: Multi-strategy router (`lead_assignment_rules`, `lead_assignment_logs`) supporting Round-Robin, Workload balancing (active leads capacity cap = 50 per rep), Territory, Source, and Service Specialization routing with real-time rep workload tracking.
+- **Module C – Smart Alerts & Reminders**: Configurable alert triggers (`alert_rules`, `business_alerts`, `notification_preferences`) for stagnant leads (>3d), stagnant deals (>14d), expiring contracts (30d notice), and overdue debts with 24-hour deduplication and multichannel preferences (InApp, Email, SMS).
+- **Module D – AI Assistant (Co-pilot)**: Conversational copilot (`ai_conversations`, `ai_conversation_messages`, `ai_provider_configurations`, `ai_usage_logs`) with global floating widget (`FloatingAiWidget.tsx`), dedicated chat workspace (`/ai-assistant`), token usage and cost tracking, configurable provider adapter (`IAiProvider`) supporting Google Gemini & OpenAI with robust domain-heuristic fallback.
+- **Module E – Natural Language Business Query Engine**: Semantic query parser translating natural language queries in Vietnamese and English into strongly-typed EF Core LINQ aggregates (Revenue, Top Sales Leaderboard, Overdue Receivables, Pipeline Stage Breakdown, Lead Sources) with zero raw dynamic SQL execution.
+- **Module F – AI Business Analytics & Forecasting**: Sales performance SWOT analysis, pipeline health score (0-100), linear regression revenue forecasting ($RunRate + \sum (DealAmount \times Probability)$) with 85% confidence interval bounds over 7/30/90/365-day horizons, statistical anomaly detection (revenue drops, lost deal spikes, stagnant clusters, payment delays), and actionable business recommendations.
+- **Module G – Automated Management Reporting**: Daily, Weekly, and Monthly management reports (`scheduled_reports`, `generated_reports`) summarizing revenue, collected cash, pipeline metrics, and top performer rankings.
+- **Module H – Role-Based Analytical Dashboards**: Dedicated UI views for Sales Rep (`/dashboard/sales`), Sales Manager (`/dashboard/manager`), and Executive C-Level (`/dashboard/executive`) with data-scoping.
+- **Module I – Frontend Implementation**: Complete React 19 + TypeScript + Vite suite with 10 feature pages across `/automation/*`, `/ai-assistant/*`, `/ai-analytics/*`, `/reports`, `/dashboard/*`, and global floating AI widget.
+- **Module J – Comprehensive Verification**: 10 unit tests for condition evaluation, round-robin, capacity limits, stagnant thresholds, regression bounds, anomaly deviations, and business query routing with 100% pass rate (31/31 passed across the solution).
 
-### Phase 8: AI Co-pilot & Final Hardening (Upcoming)
-- Natural language query assistant, executive summaries, containerization, and final security audit.
+### Phase 8: System Governance, Administration & Hardening (Upcoming)
+- Role-based access control (RBAC) management UI, user & department hierarchy editor, comprehensive audit log search/export, containerization, and final security audit.

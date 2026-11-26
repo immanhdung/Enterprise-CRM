@@ -124,6 +124,26 @@ public static class Permissions
     public const string SettingsManage = "settings:manage";
     public const string AuditView = "audit:view";
 
+    // Workflow Automation & AI Intelligence (Phase 7)
+    public const string WorkflowsView = "workflows:view";
+    public const string WorkflowsManage = "workflows:manage";
+    public const string WorkflowsExecute = "workflows:execute";
+
+    public const string AlertsView = "alerts:view";
+    public const string AlertsManage = "alerts:manage";
+
+    public const string AiAssistantUse = "ai:assistant_use";
+    public const string AiAnalyticsView = "ai:analytics_view";
+    public const string AiQueryExecute = "ai:query_execute";
+
+    public const string ReportsView = "reports:view";
+    public const string ReportsGenerate = "reports:generate";
+    public const string ReportsSchedule = "reports:schedule";
+
+    public const string DashboardSalesView = "dashboard:sales_view";
+    public const string DashboardManagerView = "dashboard:manager_view";
+    public const string DashboardExecutiveView = "dashboard:executive_view";
+
     public static readonly IReadOnlyList<(string Code, string Module, string Description)> AllPermissions = new[]
     {
         (LeadsView, "Leads", "View leads list and details"),
@@ -235,7 +255,26 @@ public static class Permissions
 
         (SettingsView, "Settings", "View system settings"),
         (SettingsManage, "Settings", "Modify company profile and configuration"),
-        (AuditView, "Audit", "View system audit logs")
+        (AuditView, "Audit", "View system audit logs"),
+
+        (WorkflowsView, "Automation", "View automated workflows and executions"),
+        (WorkflowsManage, "Automation", "Create and configure workflow definitions"),
+        (WorkflowsExecute, "Automation", "Trigger and rerun workflow automations"),
+
+        (AlertsView, "Alerts", "View business alerts and smart reminders"),
+        (AlertsManage, "Alerts", "Configure alert rules and acknowledge notifications"),
+
+        (AiAssistantUse, "AI", "Interact with AI business co-pilot and chat"),
+        (AiAnalyticsView, "AI", "View AI sales performance insights and recommendations"),
+        (AiQueryExecute, "AI", "Execute natural language business queries"),
+
+        (ReportsView, "Reports", "View management reports"),
+        (ReportsGenerate, "Reports", "Generate daily, weekly and monthly reports"),
+        (ReportsSchedule, "Reports", "Configure report schedules and auto-delivery"),
+
+        (DashboardSalesView, "Dashboards", "View sales representative personal dashboard"),
+        (DashboardManagerView, "Dashboards", "View team and department manager dashboard"),
+        (DashboardExecutiveView, "Dashboards", "View executive CEO/BOD analytics dashboard")
     };
 }
 

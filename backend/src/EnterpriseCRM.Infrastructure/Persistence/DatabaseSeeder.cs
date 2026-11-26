@@ -117,7 +117,10 @@ public static class DatabaseSeeder
                 Permissions.KpisView, Permissions.KpisApprove,
                 Permissions.PerformanceViewAll,
                 Permissions.EmployeesView,
-                Permissions.DepartmentsView, Permissions.TeamsView, Permissions.AuditView
+                Permissions.DepartmentsView, Permissions.TeamsView, Permissions.AuditView,
+                Permissions.DashboardExecutiveView, Permissions.ReportsView, Permissions.ReportsGenerate, Permissions.ReportsSchedule,
+                Permissions.AiAssistantUse, Permissions.AiAnalyticsView, Permissions.AiQueryExecute,
+                Permissions.WorkflowsView, Permissions.AlertsView
             });
 
             // Manager: Lead assign, Deal manage, Quote approve, Team manage, KPI evaluate
@@ -134,7 +137,12 @@ public static class DatabaseSeeder
                 Permissions.EmployeesView, Permissions.DepartmentsView, Permissions.TeamsView, Permissions.TeamsManage,
                 Permissions.CommissionsView, Permissions.BonusesView, Permissions.PayrollView,
                 Permissions.KpisView, Permissions.KpisManage, Permissions.KpisEvaluate,
-                Permissions.PerformanceViewTeam
+                Permissions.PerformanceViewTeam,
+                Permissions.DashboardManagerView, Permissions.DashboardSalesView,
+                Permissions.WorkflowsView, Permissions.WorkflowsManage, Permissions.WorkflowsExecute,
+                Permissions.AlertsView, Permissions.AlertsManage,
+                Permissions.ReportsView, Permissions.ReportsGenerate,
+                Permissions.AiAssistantUse, Permissions.AiAnalyticsView, Permissions.AiQueryExecute
             });
 
             // Sales: Leads, Customers, Deals, Quotes, own performance & own payslip
@@ -149,7 +157,8 @@ public static class DatabaseSeeder
                 Permissions.CommissionsViewOwn,
                 Permissions.PayrollViewOwn,
                 Permissions.KpisView,
-                Permissions.PerformanceViewOwn
+                Permissions.PerformanceViewOwn,
+                Permissions.DashboardSalesView, Permissions.AiAssistantUse, Permissions.AlertsView
             });
 
             // Accountant: Invoices, Payments, Payroll, Finance, Phase 5 Receivables & Reconciliation, Phase 6 Commissions & Payroll Processing
@@ -163,6 +172,7 @@ public static class DatabaseSeeder
                 Permissions.CommissionsView, Permissions.CommissionsManage, Permissions.CommissionsCalculate, Permissions.CommissionsAdjust, Permissions.CommissionsApprove,
                 Permissions.BonusesView, Permissions.BonusesManage, Permissions.BonusesApprove,
                 Permissions.PayrollView, Permissions.PayrollProcess, Permissions.PayrollApprove, Permissions.PayrollFinalize,
+                Permissions.ReportsView, Permissions.ReportsGenerate, Permissions.ReportsSchedule, Permissions.AlertsView, Permissions.AiAssistantUse, Permissions.AiQueryExecute,
                 Permissions.KpisView, Permissions.PerformanceViewAll,
                 Permissions.QuotationsView, Permissions.ContractsView, Permissions.CustomersView
             });

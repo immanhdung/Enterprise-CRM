@@ -57,6 +57,26 @@ import { PayrollPeriodDetailPage } from '@/features/performance/PayrollPeriodDet
 import { EmployeePayslipPage } from '@/features/performance/EmployeePayslipPage';
 import { PayrollApprovalsPage } from '@/features/performance/PayrollApprovalsPage';
 
+// Phase 7 Workflow Automation, AI Intelligence, Role Dashboards & Reports
+import { WorkflowsPage } from '@/features/automation/WorkflowsPage';
+import { WorkflowBuilderPage } from '@/features/automation/WorkflowBuilderPage';
+import { WorkflowExecutionsPage } from '@/features/automation/WorkflowExecutionsPage';
+import { LeadDistributionDashboardPage } from '@/features/automation/LeadDistributionDashboardPage';
+import { AlertsCenterPage } from '@/features/automation/AlertsCenterPage';
+
+import { AiAssistantPage } from '@/features/ai/AiAssistantPage';
+import { AiQueryPage } from '@/features/ai/AiQueryPage';
+import { AiSettingsPage } from '@/features/ai/AiSettingsPage';
+import { AiAnalyticsOverviewPage } from '@/features/ai/AiAnalyticsOverviewPage';
+import { RevenueForecastPage } from '@/features/ai/RevenueForecastPage';
+import { AnomalyDetectionPage } from '@/features/ai/AnomalyDetectionPage';
+import { BusinessRecommendationsPage } from '@/features/ai/BusinessRecommendationsPage';
+
+import { ReportsDashboardPage } from '@/features/reports/ReportsDashboardPage';
+import { SalesRoleDashboardPage } from '@/features/dashboard/SalesRoleDashboardPage';
+import { ManagerRoleDashboardPage } from '@/features/dashboard/ManagerRoleDashboardPage';
+import { ExecutiveRoleDashboardPage } from '@/features/dashboard/ExecutiveRoleDashboardPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -248,28 +268,102 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Role-Based Analytical Dashboards */}
+              <Route path="/dashboard/sales" element={<SalesRoleDashboardPage />} />
               <Route
-                path="/workflows"
+                path="/dashboard/manager"
                 element={
                   <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
-                    <FeaturePlaceholder
-                      title="Workflow Automation"
-                      description="Hangfire background engine, stagnant lead/deal detection, overdue debt alerts, and automated reporting."
-                      phase="Phase 6 (Automation & AI)"
-                    />
+                    <ManagerRoleDashboardPage />
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/ai-assistant"
+                path="/dashboard/executive"
                 element={
-                  <FeaturePlaceholder
-                    title="AI Business Co-pilot"
-                    description="Natural language business data querying, revenue forecasting, anomaly detection, and executive summaries."
-                    phase="Phase 6 (Automation & AI)"
-                  />
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <ExecutiveRoleDashboardPage />
+                  </ProtectedRoute>
                 }
               />
+
+              {/* Phase 7 – Workflow Automation */}
+              <Route
+                path="/workflows"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
+                    <WorkflowsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/automation/workflows"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
+                    <WorkflowsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/automation/workflows/create"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
+                    <WorkflowBuilderPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/automation/workflows/:id"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
+                    <WorkflowBuilderPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/automation/executions"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
+                    <WorkflowExecutionsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/automation/lead-distribution"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
+                    <LeadDistributionDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/automation/alerts" element={<AlertsCenterPage />} />
+
+              {/* Phase 7 – AI Intelligence & Assistant */}
+              <Route path="/ai-assistant" element={<AiAssistantPage />} />
+              <Route path="/ai-assistant/query" element={<AiQueryPage />} />
+              <Route
+                path="/ai-assistant/settings"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <AiSettingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/ai-analytics/overview" element={<AiAnalyticsOverviewPage />} />
+              <Route path="/ai-analytics/forecast" element={<RevenueForecastPage />} />
+              <Route path="/ai-analytics/anomalies" element={<AnomalyDetectionPage />} />
+              <Route path="/ai-analytics/recommendations" element={<BusinessRecommendationsPage />} />
+
+              {/* Phase 7 – Management Reports */}
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager', 'Accountant']}>
+                    <ReportsDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+
               <Route
                 path="/admin"
                 element={
@@ -277,7 +371,7 @@ export function App() {
                     <FeaturePlaceholder
                       title="System Administration"
                       description="Role-based access control (RBAC), user and department hierarchy, audit logging, and integration settings."
-                      phase="Phase 7 (Governance & Admin)"
+                      phase="Phase 8 (Governance & Admin)"
                     />
                   </ProtectedRoute>
                 }

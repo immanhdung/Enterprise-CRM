@@ -11,7 +11,6 @@ import {
   FileCheck,
   Briefcase,
   Receipt,
-  Cpu,
   Sparkles,
   Settings,
   ChevronLeft,
@@ -29,6 +28,10 @@ import {
   Percent,
   Award,
   Wallet,
+  Zap,
+  Bot,
+  Bell,
+  BarChart3,
 } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -52,6 +55,9 @@ const navigationGroups: NavGroup[] = [
     title: 'CRM CORE',
     items: [
       { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+      { name: 'Sales Rep View', path: '/dashboard/sales', icon: Target },
+      { name: 'Manager View', path: '/dashboard/manager', icon: Users, requiredRoles: ['Admin', 'CEO_BOD', 'Manager'] },
+      { name: 'Executive View', path: '/dashboard/executive', icon: TrendingUp, requiredRoles: ['Admin', 'CEO_BOD'] },
       { name: 'Leads', path: '/leads', icon: UserPlus, badge: 'Omnichannel' },
       { name: 'Accounts', path: '/accounts', icon: Building2 },
       { name: 'Contacts', path: '/contacts', icon: Users },
@@ -88,19 +94,24 @@ const navigationGroups: NavGroup[] = [
   {
     title: 'PERFORMANCE & PAYROLL',
     items: [
-      { name: 'Sales Dashboard', path: '/performance/dashboard', icon: TrendingUp },
+      { name: 'Performance Hub', path: '/performance/dashboard', icon: TrendingUp },
       { name: 'KPI Management', path: '/performance/kpis', icon: Target },
-      { name: 'Sales Leaderboard', path: '/performance/rankings', icon: Trophy },
+      { name: 'Leaderboard', path: '/performance/rankings', icon: Trophy },
       { name: 'Commissions', path: '/commissions', icon: Percent },
       { name: 'Performance Bonuses', path: '/bonuses', icon: Award },
       { name: 'Payroll & Payslips', path: '/payroll', icon: Wallet, requiredRoles: ['Admin', 'CEO_BOD', 'Manager', 'Accountant'] },
     ],
   },
   {
-    title: 'AUTOMATION & ADMIN',
+    title: 'AUTOMATION & AI',
     items: [
-      { name: 'Workflows & Jobs', path: '/workflows', icon: Cpu, requiredRoles: ['Admin', 'CEO_BOD', 'Manager'] },
-      { name: 'AI Assistant', path: '/ai-assistant', icon: Sparkles, badge: 'AI' },
+      { name: 'Workflows & Triggers', path: '/automation/workflows', icon: Zap, requiredRoles: ['Admin', 'CEO_BOD', 'Manager'] },
+      { name: 'Lead Distribution', path: '/automation/lead-distribution', icon: Users, requiredRoles: ['Admin', 'CEO_BOD', 'Manager'] },
+      { name: 'Smart Alerts', path: '/automation/alerts', icon: Bell },
+      { name: 'AI Co-pilot Chat', path: '/ai-assistant', icon: Bot, badge: 'AI' },
+      { name: 'NLP Query Engine', path: '/ai-assistant/query', icon: Sparkles, badge: 'NLP' },
+      { name: 'AI Analytics & Forecast', path: '/ai-analytics/overview', icon: BarChart3 },
+      { name: 'Management Reports', path: '/reports', icon: FileText, requiredRoles: ['Admin', 'CEO_BOD', 'Manager', 'Accountant'] },
       { name: 'Administration', path: '/admin', icon: Settings, requiredRoles: ['Admin', 'CEO_BOD'] },
     ],
   },

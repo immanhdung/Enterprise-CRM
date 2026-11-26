@@ -73,7 +73,22 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<CompensationAuditLog> CompensationAuditLogs => Set<CompensationAuditLog>();
     public DbSet<WorkflowDefinition> WorkflowDefinitions => Set<WorkflowDefinition>();
     public DbSet<WorkflowExecution> WorkflowExecutions => Set<WorkflowExecution>();
+    public DbSet<WorkflowExecutionLog> WorkflowExecutionLogs => Set<WorkflowExecutionLog>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<LeadAssignmentRule> LeadAssignmentRules => Set<LeadAssignmentRule>();
+    public DbSet<LeadAssignmentLog> LeadAssignmentLogs => Set<LeadAssignmentLog>();
+    public DbSet<AlertRule> AlertRules => Set<AlertRule>();
+    public DbSet<BusinessAlert> BusinessAlerts => Set<BusinessAlert>();
+    public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
+    public DbSet<AiConversation> AiConversations => Set<AiConversation>();
+    public DbSet<AiConversationMessage> AiConversationMessages => Set<AiConversationMessage>();
+    public DbSet<AiProviderConfiguration> AiProviderConfigurations => Set<AiProviderConfiguration>();
+    public DbSet<AiUsageLog> AiUsageLogs => Set<AiUsageLog>();
+    public DbSet<RevenueForecast> RevenueForecasts => Set<RevenueForecast>();
+    public DbSet<AnomalyDetection> AnomalyDetections => Set<AnomalyDetection>();
+    public DbSet<BusinessRecommendation> BusinessRecommendations => Set<BusinessRecommendation>();
+    public DbSet<ScheduledReport> ScheduledReports => Set<ScheduledReport>();
+    public DbSet<GeneratedReport> GeneratedReports => Set<GeneratedReport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -110,6 +125,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<KpiDefinition>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<BonusPolicy>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<BonusRecord>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<WorkflowDefinition>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<LeadAssignmentRule>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<AlertRule>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<AiConversation>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<ScheduledReport>().HasQueryFilter(e => !e.IsDeleted);
 
         // User Configuration
         modelBuilder.Entity<User>(entity =>
@@ -744,22 +764,185 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             entity.ToTable("workflow_definitions");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TriggerEvent).HasMaxLength(100).IsRequired();
         });
 
         modelBuilder.Entity<WorkflowExecution>(entity =>
         {
             entity.ToTable("workflow_executions");
             entity.HasKey(e => e.Id);
-            entity.HasOne(e => e.Workflow).WithMany().HasForeignKey(e => e.WorkflowId).OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.TriggerEvent).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.EntityType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.HasOne(e => e.Workflow).WithMany(w => w.Executions).HasForeignKey(e => e.WorkflowId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<WorkflowExecutionLog>(entity =>
+        {
+            entity.ToTable("workflow_execution_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.StepName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.ActionType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.HasOne(e => e.WorkflowExecution).WithMany(we => we.Logs).HasForeignKey(e => e.WorkflowExecutionId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.ToTable("notifications");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Priority).HasMaxLength(50).IsRequired();
             entity.HasIndex(e => e.RecipientUserId);
             entity.HasIndex(e => e.IsRead);
             entity.HasOne(e => e.RecipientUser).WithMany().HasForeignKey(e => e.RecipientUserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<LeadAssignmentRule>(entity =>
+        {
+            entity.ToTable("lead_assignment_rules");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Mode).HasMaxLength(50).IsRequired();
+        });
+
+        modelBuilder.Entity<LeadAssignmentLog>(entity =>
+        {
+            entity.ToTable("lead_assignment_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Mode).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Reason).HasMaxLength(500);
+            entity.HasOne(e => e.Lead).WithMany().HasForeignKey(e => e.LeadId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Rule).WithMany().HasForeignKey(e => e.RuleId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.AssignedEmployee).WithMany().HasForeignKey(e => e.AssignedEmployeeId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AlertRule>(entity =>
+        {
+            entity.ToTable("alert_rules");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.AlertType).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Severity).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Channels).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.ThresholdAmount).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<BusinessAlert>(entity =>
+        {
+            entity.ToTable("business_alerts");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(250).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.EntityType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Severity).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.HasOne(e => e.AlertRule).WithMany().HasForeignKey(e => e.AlertRuleId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<NotificationPreference>(entity =>
+        {
+            entity.ToTable("notification_preferences");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.MinSeverity).HasMaxLength(50).IsRequired();
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // AI Assistant & Analytics
+        modelBuilder.Entity<AiConversation>(entity =>
+        {
+            entity.ToTable("ai_conversations");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(300).IsRequired();
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AiConversationMessage>(entity =>
+        {
+            entity.ToTable("ai_conversation_messages");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ModelUsed).HasMaxLength(100);
+            entity.HasOne(e => e.Conversation).WithMany(c => c.Messages).HasForeignKey(e => e.ConversationId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AiProviderConfiguration>(entity =>
+        {
+            entity.ToTable("ai_provider_configurations");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ProviderType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ModelName).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Temperature).HasPrecision(5, 2);
+        });
+
+        modelBuilder.Entity<AiUsageLog>(entity =>
+        {
+            entity.ToTable("ai_usage_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OperationType).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.ProviderType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ModelName).HasMaxLength(100).IsRequired();
+        });
+
+        modelBuilder.Entity<RevenueForecast>(entity =>
+        {
+            entity.ToTable("revenue_forecasts");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PeriodLabel).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.ModelType).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.PredictedAmount).HasPrecision(18, 2);
+            entity.Property(e => e.LowerBound).HasPrecision(18, 2);
+            entity.Property(e => e.UpperBound).HasPrecision(18, 2);
+            entity.Property(e => e.ConfidenceScore).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<AnomalyDetection>(entity =>
+        {
+            entity.ToTable("anomaly_detections");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.MetricName).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Severity).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ActualValue).HasPrecision(18, 2);
+            entity.Property(e => e.ExpectedValue).HasPrecision(18, 2);
+            entity.Property(e => e.DeviationPercent).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<BusinessRecommendation>(entity =>
+        {
+            entity.ToTable("business_recommendations");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Category).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.TargetEntityType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Title).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.Priority).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+        });
+
+        modelBuilder.Entity<ScheduledReport>(entity =>
+        {
+            entity.ToTable("scheduled_reports");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.ReportType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Format).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TimeOfDay).HasMaxLength(20).IsRequired();
+        });
+
+        modelBuilder.Entity<GeneratedReport>(entity =>
+        {
+            entity.ToTable("generated_reports");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ReportType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Title).HasMaxLength(300).IsRequired();
+            entity.HasOne(e => e.ScheduledReport).WithMany().HasForeignKey(e => e.ScheduledReportId).OnDelete(DeleteBehavior.SetNull);
         });
     }
 

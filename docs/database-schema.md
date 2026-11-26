@@ -246,24 +246,88 @@ erDiagram
     - `id` (UUID, PK), `payroll_record_id` (UUID, FK -> payroll_records), `type` (VARCHAR(30)) - `Bonus`, `Penalty`, `Advance`, `TaxAdjustment`,
     - `amount` (DECIMAL(18,2)), `reason` (TEXT), `approved_by` (UUID, FK -> users).
 
-### 3.7 Automation, AI & System Governance
+### 3.7 Automation, AI & Analytics (Phase 7)
 36. **`workflow_definitions`**:
-    - `id` (UUID, PK), `name` (VARCHAR(150)), `trigger_event` (VARCHAR(100)), `conditions_json` (JSONB),
-    - `actions_json` (JSONB), `is_active` (BOOLEAN).
+    - `id` (UUID, PK), `name` (VARCHAR(150)), `description` (TEXT), `trigger_event` (VARCHAR(100)) - `LeadCreated`, `DealWon`, `PaymentOverdue`, `ContractSigned`,
+    - `conditions_json` (JSONB), `actions_json` (JSONB), `is_active` (BOOLEAN), `execution_count` (INTEGER),
+    - `last_executed_at` (TIMESTAMPTZ).
 37. **`workflow_executions`**:
-    - `id` (UUID, PK), `workflow_id` (UUID, FK -> workflow_definitions), `entity_type` (VARCHAR(50)),
-    - `entity_id` (UUID), `status` (VARCHAR(30)), `executed_at` (TIMESTAMPTZ), `result_summary` (TEXT).
-38. **`notifications`**:
-    - `id` (UUID, PK), `recipient_user_id` (UUID, FK -> users), `title` (VARCHAR(200)),
-    - `message` (TEXT), `link` (VARCHAR(255)), `is_read` (BOOLEAN DEFAULT FALSE), `type` (VARCHAR(50)).
-39. **`audit_logs`**:
-    - `id` (UUID, PK), `user_id` (UUID, FK -> users, NULLABLE), `action` (VARCHAR(50)), `entity_name` (VARCHAR(100)),
-    - `entity_id` (VARCHAR(100)), `ip_address` (VARCHAR(50)), `old_values` (JSONB NULL), `new_values` (JSONB NULL),
-    - `timestamp` (TIMESTAMPTZ DEFAULT timezone('utc', now())).
-40. **`ai_conversations`** & **`ai_messages`**:
-    - Chat history and context tokens for AI Assistant interactions bound to the authenticated user.
-41. **`integration_configurations`** & **`webhook_events`**:
-    - Webhook deduplication log (`idempotency_key`, `payload_hash`, `processed_at`, `status`).
+    - `id` (UUID, PK), `workflow_definition_id` (UUID, FK -> workflow_definitions), `trigger_event` (VARCHAR(100)),
+    - `entity_type` (VARCHAR(100)), `entity_id` (UUID), `status` (VARCHAR(30)) - `Pending`, `Running`, `Completed`, `Failed`, `Skipped`,
+    - `started_at` (TIMESTAMPTZ), `completed_at` (TIMESTAMPTZ), `duration_ms` (INTEGER), `result_summary` (TEXT), `error_message` (TEXT).
+38. **`workflow_execution_logs`**:
+    - `id` (UUID, PK), `execution_id` (UUID, FK -> workflow_executions), `step_name` (VARCHAR(150)),
+    - `action_type` (VARCHAR(100)), `status` (VARCHAR(30)), `detail_json` (TEXT), `timestamp` (TIMESTAMPTZ).
+39. **`lead_assignment_rules`**:
+    - `id` (UUID, PK), `name` (VARCHAR(150)), `routing_strategy` (VARCHAR(50)) - `RoundRobin`, `Workload`, `Territory`, `Source`, `ServiceSpecialization`,
+    - `lead_source` (VARCHAR(50) NULL), `territory` (VARCHAR(100) NULL), `target_team_id` (UUID, FK -> teams NULL),
+    - `candidate_employee_ids_json` (JSONB), `max_active_leads_per_rep` (INTEGER DEFAULT 50),
+    - `last_assigned_index` (INTEGER DEFAULT 0), `is_active` (BOOLEAN), `priority` (INTEGER DEFAULT 0).
+40. **`lead_assignment_logs`**:
+    - `id` (UUID, PK), `lead_id` (UUID, FK -> leads), `assignment_rule_id` (UUID, FK -> lead_assignment_rules NULL),
+    - `assigned_to_employee_id` (UUID, FK -> employees), `assigned_by_user_id` (UUID, FK -> users NULL),
+    - `assignment_mode` (VARCHAR(50)) - `Automatic`, `Manual`, `Reassignment`,
+    - `rule_name_applied` (VARCHAR(150)), `assigned_at` (TIMESTAMPTZ), `reason` (TEXT).
+41. **`alert_rules`**:
+    - `id` (UUID, PK), `name` (VARCHAR(150)), `alert_type` (VARCHAR(50)) - `StagnantLead`, `StagnantDeal`, `ContractExpiring`, `OverduePayment`,
+    - `threshold_days` (INTEGER), `severity` (VARCHAR(20)) - `Info`, `Warning`, `High`, `Critical`,
+    - `channel` (VARCHAR(30)) - `InApp`, `Email`, `SMS`,
+    - `recipient_role` (VARCHAR(50) NULL), `is_active` (BOOLEAN).
+42. **`business_alerts`**:
+    - `id` (UUID, PK), `alert_rule_id` (UUID, FK -> alert_rules NULL), `entity_type` (VARCHAR(50)), `entity_id` (UUID),
+    - `title` (VARCHAR(250)), `message` (TEXT), `category` (VARCHAR(50)), `severity` (VARCHAR(20)),
+    - `channel` (VARCHAR(30)), `recipient_user_id` (UUID, FK -> users NULL),
+    - `is_acknowledged` (BOOLEAN DEFAULT FALSE), `acknowledged_at` (TIMESTAMPTZ), `acknowledged_by` (UUID NULL),
+    - `created_at` (TIMESTAMPTZ).
+43. **`notification_preferences`**:
+    - `id` (UUID, PK), `user_id` (UUID, FK -> users), `enable_in_app` (BOOLEAN DEFAULT TRUE),
+    - `enable_email` (BOOLEAN DEFAULT TRUE), `enable_sms` (BOOLEAN DEFAULT FALSE),
+    - `minimum_severity` (VARCHAR(20) DEFAULT 'Warning').
+44. **`ai_conversations`**:
+    - `id` (UUID, PK), `user_id` (UUID, FK -> users), `title` (VARCHAR(200)),
+    - `context_snapshot_json` (TEXT NULL), `created_at` (TIMESTAMPTZ).
+45. **`ai_conversation_messages`**:
+    - `id` (UUID, PK), `conversation_id` (UUID, FK -> ai_conversations),
+    - `role` (VARCHAR(20)) - `user`, `assistant`, `system`,
+    - `content` (TEXT), `context_json` (TEXT NULL), `tokens_used` (INTEGER DEFAULT 0),
+    - `model_used` (VARCHAR(100) NULL), `created_at_utc` (TIMESTAMPTZ).
+46. **`ai_provider_configurations`**:
+    - `id` (UUID, PK), `provider_type` (VARCHAR(50)) - `Gemini`, `OpenAI`, `Mock`,
+    - `endpoint_url` (VARCHAR(500) NULL), `model_name` (VARCHAR(100)), `encrypted_api_key` (VARCHAR(500) NULL),
+    - `temperature` (DECIMAL(3,2) DEFAULT 0.20), `max_tokens` (INTEGER DEFAULT 2048),
+    - `is_active` (BOOLEAN DEFAULT TRUE).
+47. **`ai_usage_logs`**:
+    - `id` (UUID, PK), `user_id` (UUID, FK -> users), `operation_type` (VARCHAR(100)),
+    - `provider_type` (VARCHAR(50)), `model_name` (VARCHAR(100)), `prompt_tokens` (INTEGER),
+    - `completion_tokens` (INTEGER), `total_tokens` (INTEGER), `duration_ms` (INTEGER),
+    - `success` (BOOLEAN), `error_message` (TEXT NULL), `timestamp` (TIMESTAMPTZ).
+48. **`revenue_forecasts`**:
+    - `id` (UUID, PK), `forecast_date` (DATE), `horizon_days` (INTEGER) - 7, 30, 90, 365,
+    - `period_label` (VARCHAR(100)), `predicted_amount` (DECIMAL(18,2)),
+    - `lower_bound` (DECIMAL(18,2)), `upper_bound` (DECIMAL(18,2)),
+    - `confidence_score` (DECIMAL(5,2)), `historical_trend_json` (TEXT), `forecast_points_json` (TEXT),
+    - `assumptions_json` (TEXT), `model_type` (VARCHAR(100)).
+49. **`anomaly_detections`**:
+    - `id` (UUID, PK), `metric_name` (VARCHAR(150)), `category` (VARCHAR(50)),
+    - `severity` (VARCHAR(20)) - `Low`, `Medium`, `High`, `Critical`,
+    - `actual_value` (DECIMAL(18,2)), `expected_value` (DECIMAL(18,2)), `deviation_percent` (DECIMAL(7,2)),
+    - `description` (TEXT), `detected_at` (TIMESTAMPTZ), `status` (VARCHAR(30)) - `Active`, `Investigating`, `Resolved`, `FalsePositive`,
+    - `resolution_notes` (TEXT NULL), `resolved_by` (UUID NULL), `resolved_at` (TIMESTAMPTZ NULL).
+50. **`business_recommendations`**:
+    - `id` (UUID, PK), `category` (VARCHAR(50)), `target_entity_type` (VARCHAR(50)),
+    - `target_entity_id` (UUID), `target_entity_name` (VARCHAR(250)), `title` (VARCHAR(250)),
+    - `description` (TEXT), `priority` (VARCHAR(20)) - `Low`, `Medium`, `High`, `Urgent`,
+    - `status` (VARCHAR(30)) - `Pending`, `Applied`, `Dismissed`, `generated_at` (TIMESTAMPTZ),
+    - `action_payload_json` (TEXT NULL).
+51. **`scheduled_reports`**:
+    - `id` (UUID, PK), `name` (VARCHAR(150)), `report_type` (VARCHAR(50)) - `Daily`, `Weekly`, `Monthly`, `AdHoc`,
+    - `recipients_emails_json` (TEXT), `format` (VARCHAR(20)) - `PDF`, `Excel`, `InApp`,
+    - `time_of_day` (VARCHAR(10)), `day_of_week` (INTEGER NULL), `day_of_month` (INTEGER NULL),
+    - `is_active` (BOOLEAN DEFAULT TRUE), `last_run_at` (TIMESTAMPTZ NULL).
+52. **`generated_reports`**:
+    - `id` (UUID, PK), `scheduled_report_id` (UUID, FK -> scheduled_reports NULL), `report_type` (VARCHAR(50)),
+    - `title` (VARCHAR(250)), `period_start` (DATE), `period_end` (DATE), `summary_json` (TEXT),
+    - `full_data_json` (TEXT), `file_url` (VARCHAR(500) NULL), `generated_at` (TIMESTAMPTZ).
 
 ---
 

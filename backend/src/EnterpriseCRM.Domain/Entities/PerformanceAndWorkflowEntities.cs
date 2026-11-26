@@ -247,13 +247,22 @@ public class CompensationAuditLog : BaseEntity
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }
 
-public class WorkflowDefinition : BaseEntity
+public class WorkflowDefinition : BaseEntity, IAuditableEntity, ISoftDeletable
 {
     public string Name { get; set; } = string.Empty;
-    public string TriggerEvent { get; set; } = string.Empty; // LeadCreated, DealWon, PaymentOverdue
+    public string Description { get; set; } = string.Empty;
+    public string Category { get; set; } = "General"; // Lead, Deal, Contract, Finance, System
+    public string TriggerEvent { get; set; } = string.Empty; // LeadCreated, DealWon, PaymentOverdue, etc.
     public string? ConditionsJson { get; set; }
     public string? ActionsJson { get; set; }
+    public int ExecutionOrder { get; set; } = 1;
+    public int Version { get; set; } = 1;
     public bool IsActive { get; set; } = true;
+    public int ExecutionCount { get; set; } = 0;
+    public int ErrorCount { get; set; } = 0;
+    public DateTime? LastExecutedAt { get; set; }
+
+    public ICollection<WorkflowExecution> Executions { get; set; } = new List<WorkflowExecution>();
 }
 
 public class WorkflowExecution : BaseEntity
@@ -261,11 +270,16 @@ public class WorkflowExecution : BaseEntity
     public Guid WorkflowId { get; set; }
     public WorkflowDefinition Workflow { get; set; } = null!;
 
+    public string TriggerEvent { get; set; } = string.Empty;
     public string EntityType { get; set; } = string.Empty;
     public Guid EntityId { get; set; }
-    public string Status { get; set; } = "Success"; // Success, Failed
+    public string Status { get; set; } = "Success"; // Success, Failed, Partial
     public DateTime ExecutedAt { get; set; } = DateTime.UtcNow;
+    public long DurationMs { get; set; } = 0;
     public string? ResultSummary { get; set; }
+    public string? ErrorMessage { get; set; }
+
+    public ICollection<WorkflowExecutionLog> Logs { get; set; } = new List<WorkflowExecutionLog>();
 }
 
 public class Notification : BaseEntity
@@ -278,4 +292,6 @@ public class Notification : BaseEntity
     public string? Link { get; set; }
     public bool IsRead { get; set; } = false;
     public string Type { get; set; } = "Info"; // Info, Warning, Success, Alert
+    public string Category { get; set; } = "General"; // Lead, Deal, Finance, System
+    public string Priority { get; set; } = "Normal"; // Low, Normal, High, Urgent
 }

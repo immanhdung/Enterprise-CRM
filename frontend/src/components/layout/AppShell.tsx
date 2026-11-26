@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { FloatingAiWidget } from '@/features/ai/FloatingAiWidget';
 
 interface AppShellProps {
   children?: React.ReactNode;
@@ -17,6 +18,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           {children || <Outlet />}
         </main>
       </div>
+      <FloatingAiWidget />
     </div>
   );
 };
+

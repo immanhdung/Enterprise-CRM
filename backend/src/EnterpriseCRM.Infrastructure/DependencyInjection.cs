@@ -1,5 +1,6 @@
 using EnterpriseCRM.Application.Common.Interfaces;
 using EnterpriseCRM.Application.Features.Auth;
+using EnterpriseCRM.Application.Features.AutomationAndAi;
 using EnterpriseCRM.Infrastructure.Persistence;
 using EnterpriseCRM.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +54,20 @@ public static class DependencyInjection
         services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.ICommissionService, CommissionService>();
         services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.IBonusService, BonusService>();
         services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.IPayrollService, PayrollService>();
+
+        // Phase 7 Automation & AI Intelligence Services
+        services.AddHttpClient<IAiProvider, AiProvider>();
+        services.AddScoped<IWorkflowEngine, WorkflowEngine>();
+        services.AddScoped<ILeadAssignmentEngine, LeadAssignmentEngine>();
+        services.AddScoped<IAlertService, AlertService>();
+        services.AddScoped<IAiAssistantService, AiAssistantService>();
+        services.AddScoped<IBusinessQueryService, BusinessQueryService>();
+        services.AddScoped<ISalesAnalyticsService, SalesAnalyticsService>();
+        services.AddScoped<IRevenueForecastingService, RevenueForecastingService>();
+        services.AddScoped<IAnomalyDetectionService, AnomalyDetectionService>();
+        services.AddScoped<IReportingService, ReportingService>();
+        services.AddScoped<IRoleDashboardService, RoleDashboardService>();
+        services.AddHostedService<CRMAutomationBackgroundWorker>();
 
         // Build Supabase PostgreSQL Connection String
         var connectionString = BuildPostgreSqlConnectionString(configuration);

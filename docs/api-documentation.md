@@ -190,13 +190,64 @@ Error response (RFC 7807):
   - `POST /api/v1/payroll/periods/{id}/finalize` – Finalize and lock payroll period, marking commissions and bonuses as `Paid`.
   - `GET /api/v1/payroll/periods/{id}/records` – Detailed employee payroll records.
 
-### 2.10 AI Assistant & Analytics (`/api/v1/ai`)
-- `POST /api/v1/ai/chat` – Conversational co-pilot query against authorized business data.
-- `GET /api/v1/ai/forecast` – Revenue and sales conversion forecast based on historical trends.
-- `GET /api/v1/ai/anomalies` – Detect abnormal changes in sales velocity, stagnant deals, overdue debt.
-- `GET /api/v1/ai/summary` – Generate executive summaries (Daily, Weekly, Monthly).
+### 2.10 Workflow Automation (`/api/v1/workflows`)
+- `GET /api/v1/workflows` – List all workflow definitions.
+- `GET /api/v1/workflows/{id}` – Get workflow definition with conditions and actions.
+- `POST /api/v1/workflows` – Create a new workflow definition with triggers, conditions, and actions.
+- `PUT /api/v1/workflows/{id}` – Update workflow definition.
+- `DELETE /api/v1/workflows/{id}` – Archive/delete workflow definition.
+- `GET /api/v1/workflows/executions` – Execution audit history with execution logs.
+- `POST /api/v1/workflows/test-trigger` – Manually dispatch and test a workflow trigger event.
 
-### 2.11 System Administration (`/api/v1/admin`)
+### 2.11 Lead Assignment & Routing (`/api/v1/lead-assignment`)
+- `GET /api/v1/lead-assignment/rules` – List lead assignment rules.
+- `POST /api/v1/lead-assignment/rules` – Create or update lead assignment rule.
+- `POST /api/v1/lead-assignment/route` – Automatically route a lead based on active rules.
+- `POST /api/v1/lead-assignment/manual` – Manually assign a lead to an employee with audit reason.
+- `GET /api/v1/lead-assignment/workloads` – Real-time workload and capacity monitoring for all sales reps.
+- `GET /api/v1/lead-assignment/logs` – Lead distribution audit log.
+
+### 2.12 Smart Alerts & Reminders (`/api/v1/alerts`)
+- `GET /api/v1/alerts` – Get active business alerts (stagnant leads, stagnant deals, expiring contracts, overdue debts).
+- `GET /api/v1/alerts/rules` – List alert rules.
+- `POST /api/v1/alerts/rules` – Create or update alert rule.
+- `POST /api/v1/alerts/{id}/acknowledge` – Acknowledge an active alert.
+- `POST /api/v1/alerts/scan` – Trigger manual scan across all alert rules.
+- `GET /api/v1/alerts/preferences` – Get user notification preferences.
+- `PUT /api/v1/alerts/preferences` – Update notification channels and minimum severity.
+
+### 2.13 AI Assistant & Conversations (`/api/v1/ai-assistant`)
+- `GET /api/v1/ai-assistant/conversations` – List chat conversation threads.
+- `POST /api/v1/ai-assistant/chat` – Send message to AI Copilot (with automatic fallback heuristics).
+- `POST /api/v1/ai-assistant/query` – Execute semantic natural language query (Revenue, Top Sales, Debt, Pipeline, Leads).
+- `GET /api/v1/ai-assistant/config` – Get active AI Provider configuration (Gemini/OpenAI).
+- `PUT /api/v1/ai-assistant/config` – Update AI Provider configuration, model, temperature, max tokens.
+- `GET /api/v1/ai-assistant/usage` – Token consumption, request count, and estimated cost analytics.
+
+### 2.14 AI Analytics & Forecasting (`/api/v1/ai-analytics`)
+- `GET /api/v1/ai-analytics/overview` – Sales performance SWOT, win rate, and pipeline health score.
+- `GET /api/v1/ai-analytics/forecast` – Linear regression revenue forecast with 85% confidence interval bounds.
+- `POST /api/v1/ai-analytics/forecast/recalculate` – Trigger on-demand forecast recalculation.
+- `GET /api/v1/ai-analytics/anomalies` – List detected statistical anomalies.
+- `POST /api/v1/ai-analytics/anomalies/scan` – Run anomaly detection scan across metrics.
+- `POST /api/v1/ai-analytics/anomalies/{id}/resolve` – Resolve or mark anomaly as false positive.
+- `GET /api/v1/ai-analytics/recommendations` – AI actionable business recommendations.
+- `POST /api/v1/ai-analytics/recommendations/{id}/apply` – Apply or dismiss recommendation.
+
+### 2.15 Automated Management Reporting (`/api/v1/reports`)
+- `GET /api/v1/reports/scheduled` – List scheduled automated reports.
+- `POST /api/v1/reports/scheduled` – Create new scheduled report (Daily, Weekly, Monthly).
+- `DELETE /api/v1/reports/scheduled/{id}` – Remove scheduled report.
+- `GET /api/v1/reports/generated` – List generated and archived reports.
+- `POST /api/v1/reports/generate` – Ad-hoc report generation with JSON summary & data payload.
+- `GET /api/v1/reports/data` – Aggregated management report metrics for specified date range.
+
+### 2.16 Role-Based Analytical Dashboards (`/api/v1/dashboards`)
+- `GET /api/v1/dashboards/sales` – Sales Rep scoped dashboard (leads, pipeline, target vs achieved, commission, tasks).
+- `GET /api/v1/dashboards/manager` – Sales Manager scoped dashboard (team target, workload utilization, stagnant deals, leaderboard).
+- `GET /api/v1/dashboards/executive` – Executive C-Level dashboard (revenue, cash collected, receivables aging, anomalies).
+
+### 2.17 System Administration (`/api/v1/admin`) (Phase 8)
 - `GET /api/v1/admin/users` – User management and role assignment.
 - `GET /api/v1/admin/departments` – Department hierarchy management.
 - `GET /api/v1/admin/teams` – Team management.
