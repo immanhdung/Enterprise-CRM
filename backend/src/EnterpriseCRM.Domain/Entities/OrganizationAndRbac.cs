@@ -77,4 +77,6 @@ public class RolePermission
 
     public Guid PermissionId { get; set; }
     public Permission Permission { get; set; } = null!;
+
+    public string DataScope { get; set; } = "Company"; // Own, Assigned, Team, Department, Company
 }

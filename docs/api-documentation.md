@@ -247,9 +247,72 @@ Error response (RFC 7807):
 - `GET /api/v1/dashboards/manager` – Sales Manager scoped dashboard (team target, workload utilization, stagnant deals, leaderboard).
 - `GET /api/v1/dashboards/executive` – Executive C-Level dashboard (revenue, cash collected, receivables aging, anomalies).
 
-### 2.17 System Administration (`/api/v1/admin`) (Phase 8)
-- `GET /api/v1/admin/users` – User management and role assignment.
-- `GET /api/v1/admin/departments` – Department hierarchy management.
-- `GET /api/v1/admin/teams` – Team management.
-- `GET /api/v1/admin/audit-logs` – Audit trail search and export.
-- `GET /api/v1/admin/integrations` – Status of third-party API adapters (E-Invoice, E-Sign, Webhooks, AI).
+### 2.17 System Administration & Enterprise Governance (`/api/v1/admin` & `/api/v1/notifications`) (Phase 8)
+
+#### User Administration (`/api/v1/admin/users`)
+- `GET /api/v1/admin/users` – List users with search, status, department, and role filters.
+- `GET /api/v1/admin/users/{id}` – Get detailed user profile with roles, department, team, manager, and login activity.
+- `POST /api/v1/admin/users` – Create new enterprise user with assigned roles and credentials.
+- `PUT /api/v1/admin/users/{id}` – Update user information, roles, and status (`Active`, `Suspended`, `Deactivated`).
+- `PUT /api/v1/admin/users/{id}/status` – Transition user account status.
+- `POST /api/v1/admin/users/{id}/reset-password` – Administrative password reset with temporary credential generation.
+- `POST /api/v1/admin/users/change-password` – User self-service password update.
+- `GET /api/v1/admin/users/{id}/sessions` – List active user login sessions.
+- `DELETE /api/v1/admin/users/sessions/{sessionId}` – Remotely terminate/revoke active user session.
+
+#### Organization Administration (`/api/v1/admin/organization`)
+- `GET /api/v1/admin/organization/hierarchy` – Full hierarchical tree (Departments -> Teams -> Employees).
+- `POST /api/v1/admin/organization/transfer` – Transfer employee between departments/teams with manager assignment and audit logging.
+- `GET /api/v1/admin/organization/history` – Query historical employee organization movements.
+
+#### RBAC & Data Scope Administration (`/api/v1/admin/rbac`)
+- `GET /api/v1/admin/rbac/roles` – List all enterprise roles and their assigned permission codes.
+- `POST /api/v1/admin/rbac/roles` – Create custom enterprise role.
+- `PUT /api/v1/admin/rbac/roles/{name}` – Update role description and associated permissions.
+- `DELETE /api/v1/admin/rbac/roles/{name}` – Delete custom role (system roles `Admin`, `Sales`, `Manager`, `Accountant`, `CEO_BOD` are protected).
+- `GET /api/v1/admin/rbac/permissions` – Query complete catalog of permission codes grouped by module.
+- `GET /api/v1/admin/rbac/matrix` – Retrieve interactive Role-Permission matrix across all roles and permission codes.
+- `PUT /api/v1/admin/rbac/matrix` – Toggle permission or update data scope (`Own`, `Assigned`, `Team`, `Department`, `Company`).
+
+#### Audit Logs Center (`/api/v1/admin/audit-logs`)
+- `GET /api/v1/admin/audit-logs` – Query immutable audit logs with search, module, action, date range, and pagination.
+- `GET /api/v1/admin/audit-logs/{id}` – Get detailed audit entry with old/new JSON diffs and automatic secret masking.
+- `GET /api/v1/admin/audit-logs/export` – Export audit trail to streaming CSV format.
+
+#### Data Import / Export Center (`/api/v1/admin/data`)
+- `GET /api/v1/admin/data/import/jobs` – List all batch data import jobs and statuses.
+- `POST /api/v1/admin/data/import/execute` – Execute asynchronous batch data import for Leads, Accounts, Contacts, Deals, Employees, or Services.
+- `GET /api/v1/admin/data/import/template/{entityType}` – Download CSV import schema template.
+- `GET /api/v1/admin/data/export/jobs` – List all data export jobs.
+- `POST /api/v1/admin/data/export/request` – Request batch export generation for an entity type in CSV or Excel.
+
+#### API & Webhook Integrations (`/api/v1/admin/integrations`)
+- `GET /api/v1/admin/integrations/api-keys` – List created API keys (displaying key prefix only).
+- `POST /api/v1/admin/integrations/api-keys` – Generate cryptographic API key (`crm_live_{hex32}`) returning full secret once.
+- `DELETE /api/v1/admin/integrations/api-keys/{id}` – Revoke API key.
+- `GET /api/v1/admin/integrations/api-keys/logs` – Query API request monitoring logs.
+- `GET /api/v1/admin/integrations/webhooks` – List outbound webhook endpoints.
+- `POST /api/v1/admin/integrations/webhooks` – Register outbound webhook endpoint with subscribed events.
+- `PUT /api/v1/admin/integrations/webhooks/{id}` – Update webhook URL and subscribed events.
+- `DELETE /api/v1/admin/integrations/webhooks/{id}` – Delete webhook endpoint.
+- `GET /api/v1/admin/integrations/webhooks/{id}/deliveries` – View delivery logs for webhook endpoint.
+- `POST /api/v1/admin/integrations/webhooks/{id}/test` – Dispatch test ping with HMAC-SHA256 signature.
+
+#### Enterprise Notification Center (`/api/v1/notifications`)
+- `GET /api/v1/notifications` – Get notification summary and list for authenticated user.
+- `POST /api/v1/notifications/{id}/read` – Mark notification as read.
+- `POST /api/v1/notifications/read-all` – Mark all user notifications as read.
+- `DELETE /api/v1/notifications/{id}` – Delete notification record.
+- `POST /api/v1/notifications/dispatch` – Administrator dispatch of targeted or broadcast notifications.
+
+#### Backup & Disaster Recovery (`/api/v1/admin/backups`)
+- `GET /api/v1/admin/backups` – List backup records and integrity statuses.
+- `POST /api/v1/admin/backups` – Initiate on-demand database backup with SHA-256 integrity checksum.
+- `GET /api/v1/admin/backups/restores` – List restore verification drills.
+- `POST /api/v1/admin/backups/restore-drill` – Execute non-destructive restore verification drill against sandbox/staging target.
+- `GET /api/v1/admin/backups/supabase-pitr` – Query Supabase Point-in-Time Recovery status and restore window.
+
+#### System Configurations (`/api/v1/admin/settings`)
+- `GET /api/v1/admin/settings` – Query system configuration parameters by category.
+- `PUT /api/v1/admin/settings` – Update configuration value with change reason and audit history tracking.
+- `GET /api/v1/admin/settings/{id}/history` – Retrieve historical version audit trail for configuration parameter.

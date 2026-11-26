@@ -85,6 +85,20 @@ public interface IApplicationDbContext
     DbSet<ScheduledReport> ScheduledReports { get; }
     DbSet<GeneratedReport> GeneratedReports { get; }
 
+    // Phase 8 – System Administration & Enterprise Management
+    DbSet<UserSession> UserSessions { get; }
+    DbSet<OrganizationChangeHistory> OrganizationChangeHistories { get; }
+    DbSet<DataImportJob> DataImportJobs { get; }
+    DbSet<DataExportJob> DataExportJobs { get; }
+    DbSet<ApiKey> ApiKeys { get; }
+    DbSet<ApiRequestLog> ApiRequestLogs { get; }
+    DbSet<WebhookEndpoint> WebhookEndpoints { get; }
+    DbSet<WebhookDelivery> WebhookDeliveries { get; }
+    DbSet<BackupRecord> BackupRecords { get; }
+    DbSet<RestoreRecord> RestoreRecords { get; }
+    DbSet<SystemConfiguration> SystemConfigurations { get; }
+    DbSet<ConfigurationHistory> ConfigurationHistories { get; }
+
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

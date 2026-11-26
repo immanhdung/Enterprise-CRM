@@ -77,6 +77,18 @@ import { SalesRoleDashboardPage } from '@/features/dashboard/SalesRoleDashboardP
 import { ManagerRoleDashboardPage } from '@/features/dashboard/ManagerRoleDashboardPage';
 import { ExecutiveRoleDashboardPage } from '@/features/dashboard/ExecutiveRoleDashboardPage';
 
+// Phase 8 System Administration & Enterprise Management Pages
+import { UsersAdminPage } from '@/features/admin/UsersAdminPage';
+import { OrganizationAdminPage } from '@/features/admin/OrganizationAdminPage';
+import { RolesAdminPage } from '@/features/admin/RolesAdminPage';
+import { PermissionMatrixPage } from '@/features/admin/PermissionMatrixPage';
+import { AuditLogsPage } from '@/features/admin/AuditLogsPage';
+import { DataManagementPage } from '@/features/admin/DataManagementPage';
+import { IntegrationsPage } from '@/features/admin/IntegrationsPage';
+import { BackupsPage } from '@/features/admin/BackupsPage';
+import { SystemSettingsPage } from '@/features/admin/SystemSettingsPage';
+import { NotificationCenterPage } from '@/features/notifications/NotificationCenterPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -364,15 +376,87 @@ export function App() {
                 }
               />
 
+              {/* Phase 8 – Notification Center */}
+              <Route path="/notifications" element={<NotificationCenterPage />} />
+
+              {/* Phase 8 – System Administration & Enterprise Governance */}
               <Route
                 path="/admin"
                 element={
                   <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
-                    <FeaturePlaceholder
-                      title="System Administration"
-                      description="Role-based access control (RBAC), user and department hierarchy, audit logging, and integration settings."
-                      phase="Phase 8 (Governance & Admin)"
-                    />
+                    <Navigate to="/admin/users" replace />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <UsersAdminPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/organization"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <OrganizationAdminPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/roles"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <RolesAdminPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/permission-matrix"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <PermissionMatrixPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/audit-logs"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <AuditLogsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/data-management"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <DataManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/integrations"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <IntegrationsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/backups"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <BackupsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD']}>
+                    <SystemSettingsPage />
                   </ProtectedRoute>
                 }
               />

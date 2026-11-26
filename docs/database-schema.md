@@ -329,6 +329,73 @@ erDiagram
     - `title` (VARCHAR(250)), `period_start` (DATE), `period_end` (DATE), `summary_json` (TEXT),
     - `full_data_json` (TEXT), `file_url` (VARCHAR(500) NULL), `generated_at` (TIMESTAMPTZ).
 
+### 3.8 System Administration & Enterprise Governance (Phase 8)
+53. **`user_sessions`**:
+    - `id` (UUID, PK), `user_id` (UUID, FK -> users), `session_token` (VARCHAR(250)),
+    - `ip_address` (VARCHAR(50) NULL), `user_agent` (VARCHAR(500) NULL), `device_info` (VARCHAR(250) NULL),
+    - `created_at_utc` (TIMESTAMPTZ), `last_active_at_utc` (TIMESTAMPTZ), `expires_at_utc` (TIMESTAMPTZ),
+    - `is_revoked` (BOOLEAN DEFAULT FALSE), `revoked_at_utc` (TIMESTAMPTZ NULL).
+54. **`organization_change_histories`**:
+    - `id` (UUID, PK), `employee_id` (UUID, FK -> employees),
+    - `previous_department_id` (UUID, FK -> departments NULL), `new_department_id` (UUID, FK -> departments NULL),
+    - `previous_team_id` (UUID, FK -> teams NULL), `new_team_id` (UUID, FK -> teams NULL),
+    - `previous_manager_id` (UUID, FK -> employees NULL), `new_manager_id` (UUID, FK -> employees NULL),
+    - `change_reason` (TEXT), `effective_date` (TIMESTAMPTZ), `transferred_by_user_id` (UUID, FK -> users),
+    - `preserve_historical_metrics` (BOOLEAN DEFAULT TRUE), `created_at_utc` (TIMESTAMPTZ).
+55. **`data_import_jobs`**:
+    - `id` (UUID, PK), `entity_type` (VARCHAR(50)), `file_name` (VARCHAR(250)), `total_records` (INTEGER DEFAULT 0),
+    - `processed_records` (INTEGER DEFAULT 0), `success_count` (INTEGER DEFAULT 0), `failure_count` (INTEGER DEFAULT 0),
+    - `status` (VARCHAR(30)) - `Pending`, `Processing`, `Completed`, `Failed`,
+    - `error_log_json` (TEXT NULL), `uploaded_by_user_id` (UUID, FK -> users),
+    - `created_at_utc` (TIMESTAMPTZ), `completed_at_utc` (TIMESTAMPTZ NULL).
+56. **`data_export_jobs`**:
+    - `id` (UUID, PK), `entity_type` (VARCHAR(50)), `format` (VARCHAR(20)) - `CSV`, `Excel`,
+    - `total_records` (INTEGER DEFAULT 0), `status` (VARCHAR(30)) - `Pending`, `Completed`, `Failed`,
+    - `file_url` (VARCHAR(500) NULL), `requested_by_user_id` (UUID, FK -> users),
+    - `created_at_utc` (TIMESTAMPTZ), `completed_at_utc` (TIMESTAMPTZ NULL).
+57. **`api_keys`**:
+    - `id` (UUID, PK), `name` (VARCHAR(150)), `key_prefix` (VARCHAR(30)),
+    - `hashed_secret` (VARCHAR(256) - SHA-256 hex digest), `scopes` (VARCHAR(250) DEFAULT 'crm.read'),
+    - `rate_limit_per_minute` (INTEGER DEFAULT 60), `is_active` (BOOLEAN DEFAULT TRUE),
+    - `expires_at_utc` (TIMESTAMPTZ NULL), `last_used_at_utc` (TIMESTAMPTZ NULL),
+    - `created_by_user_id` (UUID, FK -> users), `created_at_utc` (TIMESTAMPTZ).
+58. **`api_request_logs`**:
+    - `id` (UUID, PK), `api_key_id` (UUID, FK -> api_keys NULL), `endpoint` (VARCHAR(250)),
+    - `http_method` (VARCHAR(10)), `status_code` (INTEGER), `duration_ms` (INTEGER),
+    - `ip_address` (VARCHAR(50) NULL), `user_agent` (VARCHAR(500) NULL), `timestamp_utc` (TIMESTAMPTZ).
+59. **`webhook_endpoints`**:
+    - `id` (UUID, PK), `name` (VARCHAR(150)), `url` (VARCHAR(500)),
+    - `subscribed_events_json` (TEXT), `secret` (VARCHAR(250)), `is_active` (BOOLEAN DEFAULT TRUE),
+    - `failure_count` (INTEGER DEFAULT 0), `created_by_user_id` (UUID, FK -> users),
+    - `created_at_utc` (TIMESTAMPTZ).
+60. **`webhook_deliveries`**:
+    - `id` (UUID, PK), `webhook_endpoint_id` (UUID, FK -> webhook_endpoints), `event_name` (VARCHAR(100)),
+    - `payload_json` (TEXT), `response_status_code` (INTEGER NULL), `response_body` (TEXT NULL),
+    - `duration_ms` (INTEGER), `attempt_count` (INTEGER DEFAULT 1),
+    - `status` (VARCHAR(30)) - `Delivered`, `Failed`, `Retrying`,
+    - `next_retry_at_utc` (TIMESTAMPTZ NULL), `created_at_utc` (TIMESTAMPTZ).
+61. **`backup_records`**:
+    - `id` (UUID, PK), `backup_name` (VARCHAR(200)), `backup_type` (VARCHAR(50)) - `OnDemand`, `AutomatedDaily`,
+    - `status` (VARCHAR(30)) - `Initiated`, `Completed`, `Failed`, `file_size_bytes` (BIGINT DEFAULT 0),
+    - `storage_path` (VARCHAR(500) NULL), `checksum_sha256` (VARCHAR(64) NULL),
+    - `notes` (TEXT NULL), `initiated_by_user_id` (UUID, FK -> users NULL),
+    - `created_at_utc` (TIMESTAMPTZ), `completed_at_utc` (TIMESTAMPTZ NULL).
+62. **`restore_records`**:
+    - `id` (UUID, PK), `backup_record_id` (UUID, FK -> backup_records), `backup_name` (VARCHAR(200)),
+    - `status` (VARCHAR(30)) - `Verifying`, `VerifiedSuccess`, `Failed`,
+    - `target_environment` (VARCHAR(100)) - `SandboxVerification`, `StagingDrill`,
+    - `execution_log` (TEXT NULL), `verified_by_user_id` (UUID, FK -> users),
+    - `created_at_utc` (TIMESTAMPTZ), `completed_at_utc` (TIMESTAMPTZ NULL).
+63. **`system_configurations`**:
+    - `id` (UUID, PK), `category` (VARCHAR(50)) - `General`, `CRM`, `Security`, `Notification`, `Integration`,
+    - `key` (VARCHAR(100) UNIQUE), `value` (TEXT), `description` (VARCHAR(500) NULL),
+    - `is_encrypted` (BOOLEAN DEFAULT FALSE), `updated_by_user_id` (UUID, FK -> users NULL),
+    - `updated_at_utc` (TIMESTAMPTZ).
+64. **`configuration_histories`**:
+    - `id` (UUID, PK), `configuration_id` (UUID, FK -> system_configurations),
+    - `old_value` (TEXT NULL), `new_value` (TEXT), `change_reason` (VARCHAR(250) NULL),
+    - `changed_by_user_id` (UUID, FK -> users NULL), `timestamp_utc` (TIMESTAMPTZ).
+
 ---
 
 ## 4. Database Security & Concurrency Controls

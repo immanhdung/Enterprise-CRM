@@ -144,6 +144,18 @@ public static class Permissions
     public const string DashboardManagerView = "dashboard:manager_view";
     public const string DashboardExecutiveView = "dashboard:executive_view";
 
+    // System Administration & Data Management (Phase 8)
+    public const string AuditExport = "audit:export";
+    public const string DataImport = "data:import";
+    public const string DataExport = "data:export";
+    public const string ApiKeysManage = "api:manage";
+    public const string WebhooksManage = "webhooks:manage";
+    public const string NotificationsView = "notifications:view";
+    public const string NotificationsManage = "notifications:manage";
+    public const string BackupsView = "backups:view";
+    public const string BackupsManage = "backups:manage";
+    public const string BackupsRestore = "backups:restore";
+
     public static readonly IReadOnlyList<(string Code, string Module, string Description)> AllPermissions = new[]
     {
         (LeadsView, "Leads", "View leads list and details"),
@@ -274,7 +286,18 @@ public static class Permissions
 
         (DashboardSalesView, "Dashboards", "View sales representative personal dashboard"),
         (DashboardManagerView, "Dashboards", "View team and department manager dashboard"),
-        (DashboardExecutiveView, "Dashboards", "View executive CEO/BOD analytics dashboard")
+        (DashboardExecutiveView, "Dashboards", "View executive CEO/BOD analytics dashboard"),
+
+        (AuditExport, "Audit", "Export system audit logs to Excel/CSV"),
+        (DataImport, "DataManagement", "Import business records from Excel/CSV"),
+        (DataExport, "DataManagement", "Export business records to Excel/CSV"),
+        (ApiKeysManage, "Integrations", "Manage external API keys, scopes and credentials"),
+        (WebhooksManage, "Integrations", "Manage webhook endpoints, event subscriptions and retries"),
+        (NotificationsView, "Notifications", "View in-app notifications and preferences"),
+        (NotificationsManage, "Notifications", "Dispatch notifications and broadcast system alerts"),
+        (BackupsView, "Backups", "View database backup records and restore points"),
+        (BackupsManage, "Backups", "Initiate and configure database backups"),
+        (BackupsRestore, "Backups", "Perform database restore drill and verification")
     };
 }
 

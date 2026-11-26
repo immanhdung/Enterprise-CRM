@@ -11,6 +11,9 @@ public class User : BaseEntity, IAuditableEntity, ISoftDeletable
     public string LastName { get; set; } = string.Empty;
     public string FullName => $"{FirstName} {LastName}".Trim();
     public bool IsActive { get; set; } = true;
+    public string Status { get; set; } = "Active"; // Active, Inactive, Suspended, PendingActivation
+    public int FailedLoginAttempts { get; set; } = 0;
+    public DateTime? LockoutEnd { get; set; }
     public DateTime? LastLoginAt { get; set; }
 
     public string? RefreshToken { get; set; }

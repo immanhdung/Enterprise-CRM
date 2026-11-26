@@ -90,6 +90,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<ScheduledReport> ScheduledReports => Set<ScheduledReport>();
     public DbSet<GeneratedReport> GeneratedReports => Set<GeneratedReport>();
 
+    // Phase 8 – System Administration & Enterprise Management
+    public DbSet<UserSession> UserSessions => Set<UserSession>();
+    public DbSet<OrganizationChangeHistory> OrganizationChangeHistories => Set<OrganizationChangeHistory>();
+    public DbSet<DataImportJob> DataImportJobs => Set<DataImportJob>();
+    public DbSet<DataExportJob> DataExportJobs => Set<DataExportJob>();
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<ApiRequestLog> ApiRequestLogs => Set<ApiRequestLog>();
+    public DbSet<WebhookEndpoint> WebhookEndpoints => Set<WebhookEndpoint>();
+    public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
+    public DbSet<BackupRecord> BackupRecords => Set<BackupRecord>();
+    public DbSet<RestoreRecord> RestoreRecords => Set<RestoreRecord>();
+    public DbSet<SystemConfiguration> SystemConfigurations => Set<SystemConfiguration>();
+    public DbSet<ConfigurationHistory> ConfigurationHistories => Set<ConfigurationHistory>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -943,6 +957,113 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.ReportType).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Title).HasMaxLength(300).IsRequired();
             entity.HasOne(e => e.ScheduledReport).WithMany().HasForeignKey(e => e.ScheduledReportId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Phase 8 – System Administration Entities Mappings
+        modelBuilder.Entity<UserSession>(entity =>
+        {
+            entity.ToTable("user_sessions");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.SessionToken).IsUnique();
+            entity.HasIndex(e => e.UserId);
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OrganizationChangeHistory>(entity =>
+        {
+            entity.ToTable("organization_change_histories");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.EmployeeId);
+            entity.HasIndex(e => e.CreatedAtUtc);
+            entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DataImportJob>(entity =>
+        {
+            entity.ToTable("data_import_jobs");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.EntityType);
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.UploadedByUser).WithMany().HasForeignKey(e => e.UploadedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<DataExportJob>(entity =>
+        {
+            entity.ToTable("data_export_jobs");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.EntityType);
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.RequestedByUser).WithMany().HasForeignKey(e => e.RequestedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ApiKey>(entity =>
+        {
+            entity.ToTable("api_keys");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.KeyPrefix).IsUnique();
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+            entity.HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ApiRequestLog>(entity =>
+        {
+            entity.ToTable("api_request_logs");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.ApiKeyId);
+            entity.HasIndex(e => e.TimestampUtc);
+            entity.HasOne(e => e.ApiKey).WithMany(k => k.RequestLogs).HasForeignKey(e => e.ApiKeyId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<WebhookEndpoint>(entity =>
+        {
+            entity.ToTable("webhook_endpoints");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.Url).HasMaxLength(500).IsRequired();
+        });
+
+        modelBuilder.Entity<WebhookDelivery>(entity =>
+        {
+            entity.ToTable("webhook_deliveries");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.WebhookEndpointId);
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.WebhookEndpoint).WithMany(w => w.Deliveries).HasForeignKey(e => e.WebhookEndpointId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BackupRecord>(entity =>
+        {
+            entity.ToTable("backup_records");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.BackupName).HasMaxLength(250).IsRequired();
+            entity.HasOne(e => e.InitiatedByUser).WithMany().HasForeignKey(e => e.InitiatedByUserId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<RestoreRecord>(entity =>
+        {
+            entity.ToTable("restore_records");
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.BackupRecord).WithMany().HasForeignKey(e => e.BackupRecordId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.VerifiedByUser).WithMany().HasForeignKey(e => e.VerifiedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<SystemConfiguration>(entity =>
+        {
+            entity.ToTable("system_configurations");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.Category, e.Key }).IsUnique();
+            entity.Property(e => e.Category).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Key).HasMaxLength(150).IsRequired();
+            entity.HasOne(e => e.UpdatedByUser).WithMany().HasForeignKey(e => e.UpdatedByUserId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ConfigurationHistory>(entity =>
+        {
+            entity.ToTable("configuration_histories");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.ConfigurationId);
+            entity.HasOne(e => e.Configuration).WithMany(c => c.Histories).HasForeignKey(e => e.ConfigurationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.ChangedByUser).WithMany().HasForeignKey(e => e.ChangedByUserId).OnDelete(DeleteBehavior.SetNull);
         });
     }
 

@@ -32,6 +32,7 @@ import {
   Bot,
   Bell,
   BarChart3,
+  Database,
 } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -112,7 +113,20 @@ const navigationGroups: NavGroup[] = [
       { name: 'NLP Query Engine', path: '/ai-assistant/query', icon: Sparkles, badge: 'NLP' },
       { name: 'AI Analytics & Forecast', path: '/ai-analytics/overview', icon: BarChart3 },
       { name: 'Management Reports', path: '/reports', icon: FileText, requiredRoles: ['Admin', 'CEO_BOD', 'Manager', 'Accountant'] },
-      { name: 'Administration', path: '/admin', icon: Settings, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'Notification Center', path: '/notifications', icon: Bell },
+    ],
+  },
+  {
+    title: 'SYSTEM ADMINISTRATION',
+    items: [
+      { name: 'Users & Accounts', path: '/admin/users', icon: Users, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'Organization Structure', path: '/admin/organization', icon: Building2, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'Roles & RBAC Matrix', path: '/admin/roles', icon: ShieldCheck, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'Audit Logs', path: '/admin/audit-logs', icon: FileText, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'Import / Export Center', path: '/admin/data-management', icon: FileSpreadsheet, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'API & Webhooks', path: '/admin/integrations', icon: Zap, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'Disaster Recovery', path: '/admin/backups', icon: Database, requiredRoles: ['Admin', 'CEO_BOD'] },
+      { name: 'System Settings', path: '/admin/settings', icon: Settings, requiredRoles: ['Admin', 'CEO_BOD'] },
     ],
   },
 ];

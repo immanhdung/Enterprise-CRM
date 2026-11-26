@@ -1,6 +1,7 @@
 using EnterpriseCRM.Application.Common.Interfaces;
 using EnterpriseCRM.Application.Features.Auth;
 using EnterpriseCRM.Application.Features.AutomationAndAi;
+using EnterpriseCRM.Application.Features.SystemAdministration;
 using EnterpriseCRM.Infrastructure.Persistence;
 using EnterpriseCRM.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -68,6 +69,17 @@ public static class DependencyInjection
         services.AddScoped<IReportingService, ReportingService>();
         services.AddScoped<IRoleDashboardService, RoleDashboardService>();
         services.AddHostedService<CRMAutomationBackgroundWorker>();
+
+        // Phase 8 System Administration & Enterprise Management Services
+        services.AddScoped<IUserAdministrationService, UserAdministrationService>();
+        services.AddScoped<IOrganizationAdministrationService, OrganizationAdministrationService>();
+        services.AddScoped<IRbacAdministrationService, RbacAdministrationService>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<IDataImportExportService, DataImportExportService>();
+        services.AddHttpClient<IApiAndWebhookService, ApiAndWebhookService>();
+        services.AddScoped<INotificationCenterService, NotificationCenterService>();
+        services.AddScoped<IBackupAndRestoreService, BackupAndRestoreService>();
+        services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
 
         // Build Supabase PostgreSQL Connection String
         var connectionString = BuildPostgreSqlConnectionString(configuration);
