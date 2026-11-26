@@ -46,6 +46,14 @@ public static class DependencyInjection
         services.AddScoped<EnterpriseCRM.Application.Features.Finance.IInvoiceService, InvoiceService>();
         services.AddScoped<EnterpriseCRM.Application.Features.Finance.IFinancialReconciliationService, FinancialReconciliationService>();
 
+        // Phase 6 Performance, KPI, Commission & Payroll Services
+        services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.ICompensationAuditService, CompensationAuditService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.IKpiService, KpiService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.ISalesPerformanceService, SalesPerformanceService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.ICommissionService, CommissionService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.IBonusService, BonusService>();
+        services.AddScoped<EnterpriseCRM.Application.Features.PerformanceAndCompensation.IPayrollService, PayrollService>();
+
         // Build Supabase PostgreSQL Connection String
         var connectionString = BuildPostgreSqlConnectionString(configuration);
 

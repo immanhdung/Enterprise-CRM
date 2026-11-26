@@ -61,12 +61,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<ReconciliationItem> ReconciliationItems => Set<ReconciliationItem>();
 
     // Performance, Payroll & Automation
+    public DbSet<KpiDefinition> KpiDefinitions => Set<KpiDefinition>();
     public DbSet<Kpi> Kpis => Set<Kpi>();
     public DbSet<CommissionPolicy> CommissionPolicies => Set<CommissionPolicy>();
     public DbSet<Commission> Commissions => Set<Commission>();
+    public DbSet<BonusPolicy> BonusPolicies => Set<BonusPolicy>();
+    public DbSet<BonusRecord> BonusRecords => Set<BonusRecord>();
     public DbSet<PayrollPeriod> PayrollPeriods => Set<PayrollPeriod>();
     public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
     public DbSet<PayrollAdjustment> PayrollAdjustments => Set<PayrollAdjustment>();
+    public DbSet<CompensationAuditLog> CompensationAuditLogs => Set<CompensationAuditLog>();
     public DbSet<WorkflowDefinition> WorkflowDefinitions => Set<WorkflowDefinition>();
     public DbSet<WorkflowExecution> WorkflowExecutions => Set<WorkflowExecution>();
     public DbSet<Notification> Notifications => Set<Notification>();
@@ -103,6 +107,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<ReceivableCollectionLog>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<FinancialReconciliationRecord>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CommissionPolicy>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<KpiDefinition>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<BonusPolicy>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<BonusRecord>().HasQueryFilter(e => !e.IsDeleted);
 
         // User Configuration
         modelBuilder.Entity<User>(entity =>
@@ -585,54 +592,151 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         });
 
         // Performance & Payroll
+        modelBuilder.Entity<KpiDefinition>(entity =>
+        {
+            entity.ToTable("kpi_definitions");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.MetricType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Unit).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.DefaultTarget).HasPrecision(18, 2);
+        });
+
         modelBuilder.Entity<Kpi>(entity =>
         {
             entity.ToTable("kpis");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Scope).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
             entity.Property(e => e.TargetRevenue).HasPrecision(18, 2);
             entity.Property(e => e.AchievedRevenue).HasPrecision(18, 2);
+            entity.Property(e => e.TargetConversionRate).HasPrecision(5, 2);
+            entity.Property(e => e.AchievedConversionRate).HasPrecision(5, 2);
+            entity.Property(e => e.WeightPercent).HasPrecision(5, 2);
+            entity.Property(e => e.AchievementScore).HasPrecision(5, 2);
+
+            entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Definition).WithMany().HasForeignKey(e => e.DefinitionId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Team).WithMany().HasForeignKey(e => e.TeamId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Department).WithMany().HasForeignKey(e => e.DepartmentId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<CommissionPolicy>(entity =>
         {
             entity.ToTable("commission_policies");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.PolicyType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CalculationBasis).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CustomerType).HasMaxLength(50).IsRequired();
             entity.Property(e => e.MinThreshold).HasPrecision(18, 2);
             entity.Property(e => e.MaxThreshold).HasPrecision(18, 2);
+            entity.Property(e => e.MaxCap).HasPrecision(18, 2);
             entity.Property(e => e.RatePercent).HasPrecision(5, 2);
+
+            entity.HasOne(e => e.Service).WithMany().HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Department).WithMany().HasForeignKey(e => e.DepartmentId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Team).WithMany().HasForeignKey(e => e.TeamId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Commission>(entity =>
         {
             entity.ToTable("commissions");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.CalculationBasis).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.SourceType).HasMaxLength(50);
+            entity.Property(e => e.BaseAmount).HasPrecision(18, 2);
+            entity.Property(e => e.RateApplied).HasPrecision(5, 2);
             entity.Property(e => e.CalculatedAmount).HasPrecision(18, 2);
+            entity.Property(e => e.AdjustmentAmount).HasPrecision(18, 2);
+            entity.Property(e => e.NetCommission).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Deal).WithMany().HasForeignKey(e => e.DealId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Contract).WithMany().HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Payment).WithMany().HasForeignKey(e => e.PaymentId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Policy).WithMany().HasForeignKey(e => e.PolicyId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<BonusPolicy>(entity =>
+        {
+            entity.ToTable("bonus_policies");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Period).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TargetThreshold).HasPrecision(18, 2);
+            entity.Property(e => e.BonusAmount).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<BonusRecord>(entity =>
+        {
+            entity.ToTable("bonus_records");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Reason).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.BonusPolicy).WithMany().HasForeignKey(e => e.BonusPolicyId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.PayrollRecord).WithMany().HasForeignKey(e => e.PayrollRecordId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<PayrollPeriod>(entity =>
         {
             entity.ToTable("payroll_periods");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(150).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.TotalBaseSalary).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCommission).HasPrecision(18, 2);
+            entity.Property(e => e.TotalBonuses).HasPrecision(18, 2);
+            entity.Property(e => e.TotalAllowances).HasPrecision(18, 2);
+            entity.Property(e => e.TotalDeductions).HasPrecision(18, 2);
+            entity.Property(e => e.TotalGross).HasPrecision(18, 2);
+            entity.Property(e => e.TotalNet).HasPrecision(18, 2);
         });
 
         modelBuilder.Entity<PayrollRecord>(entity =>
         {
             entity.ToTable("payroll_records");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
             entity.Property(e => e.BaseSalary).HasPrecision(18, 2);
             entity.Property(e => e.TotalCommission).HasPrecision(18, 2);
             entity.Property(e => e.Bonuses).HasPrecision(18, 2);
+            entity.Property(e => e.Allowances).HasPrecision(18, 2);
             entity.Property(e => e.Deductions).HasPrecision(18, 2);
+            entity.Property(e => e.GrossSalary).HasPrecision(18, 2);
             entity.Property(e => e.NetSalary).HasPrecision(18, 2);
+            entity.Property(e => e.CommissionEarned).HasPrecision(18, 2);
+            entity.Property(e => e.CommissionApproved).HasPrecision(18, 2);
+            entity.Property(e => e.CommissionPayable).HasPrecision(18, 2);
+            entity.Property(e => e.CommissionPaid).HasPrecision(18, 2);
+
             entity.HasOne(e => e.PayrollPeriod).WithMany(p => p.Records).HasForeignKey(e => e.PayrollPeriodId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<PayrollAdjustment>(entity =>
         {
             entity.ToTable("payroll_adjustments");
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.HasOne(e => e.PayrollRecord).WithMany(r => r.Adjustments).HasForeignKey(e => e.PayrollRecordId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CompensationAuditLog>(entity =>
+        {
+            entity.ToTable("compensation_audit_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EntityType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Action).HasMaxLength(50).IsRequired();
         });
 
         // Automation & Notifications

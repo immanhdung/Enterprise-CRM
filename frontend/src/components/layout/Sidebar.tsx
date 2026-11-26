@@ -11,7 +11,6 @@ import {
   FileCheck,
   Briefcase,
   Receipt,
-  CircleDollarSign,
   Cpu,
   Sparkles,
   Settings,
@@ -25,6 +24,11 @@ import {
   TrendingUp,
   Scale,
   AlertCircle,
+  Target,
+  Trophy,
+  Percent,
+  Award,
+  Wallet,
 } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -82,9 +86,19 @@ const navigationGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'PERFORMANCE & AI',
+    title: 'PERFORMANCE & PAYROLL',
     items: [
-      { name: 'Commissions & Payroll', path: '/payroll', icon: CircleDollarSign, requiredRoles: ['Admin', 'CEO_BOD', 'Manager', 'Accountant'] },
+      { name: 'Sales Dashboard', path: '/performance/dashboard', icon: TrendingUp },
+      { name: 'KPI Management', path: '/performance/kpis', icon: Target },
+      { name: 'Sales Leaderboard', path: '/performance/rankings', icon: Trophy },
+      { name: 'Commissions', path: '/commissions', icon: Percent },
+      { name: 'Performance Bonuses', path: '/bonuses', icon: Award },
+      { name: 'Payroll & Payslips', path: '/payroll', icon: Wallet, requiredRoles: ['Admin', 'CEO_BOD', 'Manager', 'Accountant'] },
+    ],
+  },
+  {
+    title: 'AUTOMATION & ADMIN',
+    items: [
       { name: 'Workflows & Jobs', path: '/workflows', icon: Cpu, requiredRoles: ['Admin', 'CEO_BOD', 'Manager'] },
       { name: 'AI Assistant', path: '/ai-assistant', icon: Sparkles, badge: 'AI' },
       { name: 'Administration', path: '/admin', icon: Settings, requiredRoles: ['Admin', 'CEO_BOD'] },

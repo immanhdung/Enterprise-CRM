@@ -39,6 +39,24 @@ import { CustomerReceivableDetailPage } from '@/features/finance/CustomerReceiva
 import { RevenueAnalyticsPage } from '@/features/finance/RevenueAnalyticsPage';
 import { ReconciliationPage } from '@/features/finance/ReconciliationPage';
 
+// Phase 6 Sales Performance, KPI, Commission & Payroll Pages
+import { SalesPerformanceDashboardPage } from '@/features/performance/SalesPerformanceDashboardPage';
+import { KpisPage } from '@/features/performance/KpisPage';
+import { KpiDetailPage } from '@/features/performance/KpiDetailPage';
+import { KpiAssignmentsPage } from '@/features/performance/KpiAssignmentsPage';
+import { EmployeePerformancePage } from '@/features/performance/EmployeePerformancePage';
+import { TeamPerformancePage } from '@/features/performance/TeamPerformancePage';
+import { CommissionsPage } from '@/features/performance/CommissionsPage';
+import { CommissionPoliciesPage } from '@/features/performance/CommissionPoliciesPage';
+import { CommissionPolicyDetailPage } from '@/features/performance/CommissionPolicyDetailPage';
+import { CommissionAdjustmentsPage } from '@/features/performance/CommissionAdjustmentsPage';
+import { BonusesPage } from '@/features/performance/BonusesPage';
+import { BonusPoliciesPage } from '@/features/performance/BonusPoliciesPage';
+import { PayrollDashboardPage } from '@/features/performance/PayrollDashboardPage';
+import { PayrollPeriodDetailPage } from '@/features/performance/PayrollPeriodDetailPage';
+import { EmployeePayslipPage } from '@/features/performance/EmployeePayslipPage';
+import { PayrollApprovalsPage } from '@/features/performance/PayrollApprovalsPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -170,15 +188,63 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Phase 6 – Sales Performance, KPI, Commission & Payroll */}
+              <Route path="/performance/dashboard" element={<SalesPerformanceDashboardPage />} />
+              <Route path="/performance/kpis" element={<KpisPage />} />
+              <Route path="/performance/kpis/:id" element={<KpiDetailPage />} />
+              <Route path="/performance/assignments" element={<KpiAssignmentsPage />} />
+              <Route path="/performance/rankings" element={<EmployeePerformancePage />} />
+              <Route path="/performance/employees" element={<EmployeePerformancePage />} />
+              <Route path="/performance/teams" element={<TeamPerformancePage />} />
+              <Route path="/performance/departments" element={<TeamPerformancePage />} />
+
+              <Route path="/commissions" element={<CommissionsPage />} />
+              <Route path="/commissions/calculations" element={<CommissionsPage />} />
+              <Route path="/commissions/policies" element={<CommissionPoliciesPage />} />
+              <Route path="/commissions/policies/:id" element={<CommissionPolicyDetailPage />} />
+              <Route path="/commissions/adjustments" element={<CommissionAdjustmentsPage />} />
+
+              <Route path="/bonuses" element={<BonusesPage />} />
+              <Route path="/bonuses/adjustments" element={<BonusesPage />} />
+              <Route path="/bonuses/policies" element={<BonusPoliciesPage />} />
+
               <Route
                 path="/payroll"
                 element={
                   <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager', 'Accountant']}>
-                    <FeaturePlaceholder
-                      title="Commissions & Payroll"
-                      description="Multi-tiered sales commission policies, KPI performance tracking, salary adjustments, and approval workflows."
-                      phase="Phase 5 (Performance & Payroll)"
-                    />
+                    <PayrollDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payroll/periods"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager', 'Accountant']}>
+                    <PayrollDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payroll/periods/:id"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager', 'Accountant']}>
+                    <PayrollPeriodDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payroll/employees/:id"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager', 'Accountant', 'Sales']}>
+                    <EmployeePayslipPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payroll/approvals"
+                element={
+                  <ProtectedRoute requiredRoles={['Admin', 'CEO_BOD', 'Manager']}>
+                    <PayrollApprovalsPage />
                   </ProtectedRoute>
                 }
               />

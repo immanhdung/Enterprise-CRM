@@ -1,8 +1,8 @@
 # Enterprise CRM – Database Schema & ERD Documentation
 
-> **Status (Phase 5):** ✅ Applied to Supabase PostgreSQL (`aws-0-ap-northeast-2.pooler.supabase.com`)  
-> **Migrations:** `20261115121722_InitialCreate`, `20261116135246_AddPhase4CrmEntities`, `20261117111212_AddPhase5FinanceManagement`  
-> **Schema Execution:** 40+ Tables with Soft Delete Query Filters, UTC Timestamps, Decimal(18,2) precision, Indexes, and Idempotent Constraints.
+> **Status (Phase 6):** ✅ Implemented & Scaffolded for Supabase PostgreSQL (`aws-0-ap-northeast-2.pooler.supabase.com`)  
+> **Migrations:** `20261115121722_InitialCreate`, `20261116135246_AddPhase4CrmEntities`, `20261117111212_AddPhase5FinanceManagement`, `20261126121318_AddPhase6PerformanceAndCompensation`  
+> **Schema Execution:** 45+ Tables with Soft Delete Query Filters, UTC Timestamps, Decimal(18,2) precision, Tier JSON structures, Compensation Audit Trails, Indexes, and Idempotent Constraints.
 
 ## 1. Overview & Database Standards
 

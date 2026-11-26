@@ -154,13 +154,41 @@ Error response (RFC 7807):
   - `POST /api/v1/finance/reconciliation/run` – Execute cross-reconciliation engine (Contracts vs. Invoiced vs. Collected Cash).
   - `POST /api/v1/finance/reconciliation/items/{id}/resolve` – Authorized discrepancy resolution (`ConfirmAdjustment` or `Dismiss`) with mandatory audit notes.
 
-### 2.9 Performance, Commission & Payroll (`/api/v1/commissions`, `/api/v1/payroll`, `/api/v1/kpis`)
-- `GET /api/v1/kpis` – Sales target vs. achieved metrics per employee, team, department.
-- `GET /api/v1/commissions` – Commission logs linked to signed deals and collected payments.
-- `POST /api/v1/commissions/calculate` – Trigger commission calculation engine for a given period.
-- `GET /api/v1/payroll/periods` – List payroll periods.
-- `POST /api/v1/payroll/periods/{id}/generate` – Generate monthly payroll records.
-- `POST /api/v1/payroll/periods/{id}/approve` – Multi-level approval (Manager -> CEO).
+### 2.9 Performance, Commission & Payroll (`/api/v1/kpis`, `/api/v1/performance`, `/api/v1/commissions`, `/api/v1/bonuses`, `/api/v1/payroll`)
+- **KPI Management (`/api/v1/kpis`)**:
+  - `GET /api/v1/kpis/definitions` – List KPI metric definitions (Sales, Activity, Conversion).
+  - `POST /api/v1/kpis/definitions` – Create new KPI definition (MetricType, Unit, DefaultTarget).
+  - `GET /api/v1/kpis/assignments` – Filter assigned targets by month, year, employee, department, and status.
+  - `POST /api/v1/kpis/assignments` – Assign targets (Revenue, Deals, Leads, Calls, Meetings, Conversion Rate, Weight).
+  - `POST /api/v1/kpis/assignments/{id}/auto-calculate` – Automatically compute actuals directly from signed contracts and won deals.
+  - `POST /api/v1/kpis/assignments/{id}/evaluate` – Record evaluation metrics and calculate blended weighted achievement score.
+  - `POST /api/v1/kpis/assignments/{id}/approve` – Approve KPI evaluation with anti-self-approval rule.
+- **Sales Performance Analytics (`/api/v1/performance`)**:
+  - `GET /api/v1/performance/summary` – Multi-dimensional funnel metrics, MoM growth comparison (Revenue, Deals, Conversion).
+  - `GET /api/v1/performance/rankings` – Sales leaderboard ranking with podium (#1, #2, #3), win rates, and KPI tiers.
+  - `GET /api/v1/performance/timeline` – Historical trends by month or quarter (Contract Value, Invoiced, Cash, Won Deals).
+- **Commission Management (`/api/v1/commissions`)**:
+  - `GET /api/v1/commissions/policies` – List commission policies.
+  - `POST /api/v1/commissions/policies` – Create commission policy (CollectedCash, ContractValue, TargetTierBased, CustomerType).
+  - `GET /api/v1/commissions` – Query calculated commission items by month, year, employee, status.
+  - `POST /api/v1/commissions/calculate` – Execute calculation engine against confirmed payments and signed contracts.
+  - `POST /api/v1/commissions/adjust` – Manual adjustment with mandatory reason logged to compensation audit trail.
+  - `POST /api/v1/commissions/{id}/approve` – Approve commission record with anti-self-approval protection.
+  - `GET /api/v1/commissions/audit-logs` – Compensation audit trail search and verification.
+- **Bonus Management (`/api/v1/bonuses`)**:
+  - `GET /api/v1/bonuses/policies` – List bonus policies (Individual, Team, CustomerAcquisition, RevenueTarget, Special).
+  - `POST /api/v1/bonuses/policies` – Create bonus policy.
+  - `GET /api/v1/bonuses` – List bonus records.
+  - `POST /api/v1/bonuses` – Grant bonus to an employee.
+  - `POST /api/v1/bonuses/{id}/approve` – Approve bonus record with anti-self-approval rule.
+- **Payroll Management (`/api/v1/payroll`)**:
+  - `GET /api/v1/payroll/periods` – List payroll periods with financial summary totals (Base, Commission, Bonuses, Gross, Net).
+  - `POST /api/v1/payroll/periods` – Create new payroll period.
+  - `POST /api/v1/payroll/periods/{id}/process` – Run payroll processing engine (aggregates base salary, approved commissions, bonuses).
+  - `POST /api/v1/payroll/adjustments` – Add allowance or deduction adjustment with mandatory reason.
+  - `POST /api/v1/payroll/periods/{id}/approve` – Multi-level approval (Manager -> Director/CEO).
+  - `POST /api/v1/payroll/periods/{id}/finalize` – Finalize and lock payroll period, marking commissions and bonuses as `Paid`.
+  - `GET /api/v1/payroll/periods/{id}/records` – Detailed employee payroll records.
 
 ### 2.10 AI Assistant & Analytics (`/api/v1/ai`)
 - `POST /api/v1/ai/chat` – Conversational co-pilot query against authorized business data.

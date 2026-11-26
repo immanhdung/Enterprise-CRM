@@ -101,7 +101,7 @@ public static class DatabaseSeeder
             // Admin: All
             AssignPermissionsToRole(existingRoles[SystemRoles.Admin], Permissions.AllPermissions.Select(p => p.Code));
 
-            // CEO / BOD: High-level view, approve, reports, reconciliation
+            // CEO / BOD: High-level view, approve, reports, reconciliation, performance & payroll approval
             AssignPermissionsToRole(existingRoles[SystemRoles.CeoBod], new[]
             {
                 Permissions.LeadsView, Permissions.CustomersView, Permissions.DealsView,
@@ -111,11 +111,16 @@ public static class DatabaseSeeder
                 Permissions.PaymentsView, Permissions.PaymentsReverse, Permissions.FinanceView, Permissions.FinanceExport,
                 Permissions.ReceivablesView, Permissions.ReceivablesManage,
                 Permissions.ReconciliationView, Permissions.ReconciliationManage,
-                Permissions.CommissionsView, Permissions.PayrollView, Permissions.EmployeesView,
+                Permissions.CommissionsView, Permissions.CommissionsApprove,
+                Permissions.BonusesView, Permissions.BonusesApprove,
+                Permissions.PayrollView, Permissions.PayrollApprove, Permissions.PayrollFinalize,
+                Permissions.KpisView, Permissions.KpisApprove,
+                Permissions.PerformanceViewAll,
+                Permissions.EmployeesView,
                 Permissions.DepartmentsView, Permissions.TeamsView, Permissions.AuditView
             });
 
-            // Manager: Lead assign, Deal manage, Quote approve, Team manage
+            // Manager: Lead assign, Deal manage, Quote approve, Team manage, KPI evaluate
             AssignPermissionsToRole(existingRoles[SystemRoles.Manager], new[]
             {
                 Permissions.LeadsView, Permissions.LeadsCreate, Permissions.LeadsEdit, Permissions.LeadsAssign, Permissions.LeadsExport,
@@ -127,10 +132,12 @@ public static class DatabaseSeeder
                 Permissions.InvoicesView, Permissions.InvoicesCreate,
                 Permissions.PaymentsView,
                 Permissions.EmployeesView, Permissions.DepartmentsView, Permissions.TeamsView, Permissions.TeamsManage,
-                Permissions.CommissionsView
+                Permissions.CommissionsView, Permissions.BonusesView, Permissions.PayrollView,
+                Permissions.KpisView, Permissions.KpisManage, Permissions.KpisEvaluate,
+                Permissions.PerformanceViewTeam
             });
 
-            // Sales: Leads, Customers, Deals, Quotes
+            // Sales: Leads, Customers, Deals, Quotes, own performance & own payslip
             AssignPermissionsToRole(existingRoles[SystemRoles.Sales], new[]
             {
                 Permissions.LeadsView, Permissions.LeadsCreate, Permissions.LeadsEdit,
@@ -139,10 +146,13 @@ public static class DatabaseSeeder
                 Permissions.QuotationsView, Permissions.QuotationsCreate, Permissions.QuotationsEdit, Permissions.QuotationsSend,
                 Permissions.ContractsView,
                 Permissions.ProjectsView,
-                Permissions.CommissionsView
+                Permissions.CommissionsViewOwn,
+                Permissions.PayrollViewOwn,
+                Permissions.KpisView,
+                Permissions.PerformanceViewOwn
             });
 
-            // Accountant: Invoices, Payments, Payroll, Finance, Phase 5 Receivables & Reconciliation
+            // Accountant: Invoices, Payments, Payroll, Finance, Phase 5 Receivables & Reconciliation, Phase 6 Commissions & Payroll Processing
             AssignPermissionsToRole(existingRoles[SystemRoles.Accountant], new[]
             {
                 Permissions.InvoicesView, Permissions.InvoicesCreate, Permissions.InvoicesEdit, Permissions.InvoicesApprove, Permissions.InvoicesDelete,
@@ -150,8 +160,10 @@ public static class DatabaseSeeder
                 Permissions.ReceivablesView, Permissions.ReceivablesManage,
                 Permissions.ReconciliationView, Permissions.ReconciliationManage,
                 Permissions.FinanceView, Permissions.FinanceExport,
-                Permissions.CommissionsView, Permissions.CommissionsManage,
-                Permissions.PayrollView, Permissions.PayrollProcess,
+                Permissions.CommissionsView, Permissions.CommissionsManage, Permissions.CommissionsCalculate, Permissions.CommissionsAdjust, Permissions.CommissionsApprove,
+                Permissions.BonusesView, Permissions.BonusesManage, Permissions.BonusesApprove,
+                Permissions.PayrollView, Permissions.PayrollProcess, Permissions.PayrollApprove, Permissions.PayrollFinalize,
+                Permissions.KpisView, Permissions.PerformanceViewAll,
                 Permissions.QuotationsView, Permissions.ContractsView, Permissions.CustomersView
             });
 
@@ -1168,6 +1180,180 @@ All deliverables generated under this agreement shall be transferred to Client u
                 }
 
                 logger.LogInformation("Phase 5 Financial Management seeding completed.");
+
+                // 11. Seed Phase 6 Performance, KPI, Commission & Payroll
+                if (!await context.KpiDefinitions.AnyAsync())
+                {
+                    logger.LogInformation("Seeding Phase 6 Performance & Compensation data...");
+
+                    var kpiDefs = new List<KpiDefinition>
+                    {
+                        new()
+                        {
+                            Id = Guid.NewGuid(),
+                            Code = "SALES_REV",
+                            Name = "Doanh thu Hợp đồng Ký kết",
+                            Category = "Sales",
+                            MetricType = "Currency",
+                            Unit = "VND",
+                            DefaultTarget = 200000000m,
+                            Description = "Mục tiêu tổng giá trị hợp đồng ký mới trong kỳ đánh giá."
+                        },
+                        new()
+                        {
+                            Id = Guid.NewGuid(),
+                            Code = "DEALS_WON",
+                            Name = "Số Deal Thành công (Won)",
+                            Category = "Sales",
+                            MetricType = "Count",
+                            Unit = "Deals",
+                            DefaultTarget = 5m,
+                            Description = "Số lượng cơ hội bán hàng chuyển thành công hợp đồng."
+                        },
+                        new()
+                        {
+                            Id = Guid.NewGuid(),
+                            Code = "LEADS_CONV",
+                            Name = "Leads Chuyển đổi Khách hàng",
+                            Category = "Conversion",
+                            MetricType = "Count",
+                            Unit = "Leads",
+                            DefaultTarget = 15m,
+                            Description = "Số khách hàng tiềm năng chuyển đổi thành khách hàng hoặc deal."
+                        },
+                        new()
+                        {
+                            Id = Guid.NewGuid(),
+                            Code = "CALLS_MADE",
+                            Name = "Số cuộc gọi tư vấn",
+                            Category = "Activity",
+                            MetricType = "Count",
+                            Unit = "Calls",
+                            DefaultTarget = 40m,
+                            Description = "Số lượt gọi điện tương tác tư vấn với khách hàng."
+                        },
+                        new()
+                        {
+                            Id = Guid.NewGuid(),
+                            Code = "MEETINGS_HELD",
+                            Name = "Số cuộc gặp tư vấn trực tiếp",
+                            Category = "Activity",
+                            MetricType = "Count",
+                            Unit = "Meetings",
+                            DefaultTarget = 10m,
+                            Description = "Số buổi gặp mặt trực tiếp hoặc online demo dịch vụ."
+                        }
+                    };
+                    context.KpiDefinitions.AddRange(kpiDefs);
+
+                    // Seed sample Commission Policies
+                    var policyCollectedCash = new CommissionPolicy
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Chính sách Hoa hồng Tiền mặt Thực thu",
+                        PolicyType = "CollectedCashBased",
+                        CalculationBasis = "CollectedCash",
+                        CustomerType = "All",
+                        MinThreshold = 10000000m,
+                        RatePercent = 4.0m,
+                        Version = 1,
+                        Description = "Tính hoa hồng 4% trên tổng số tiền khách hàng đã thanh toán thực tế (Confirmed).",
+                        EffectiveFrom = new DateOnly(2026, 1, 1),
+                        IsActive = true
+                    };
+
+                    var policyTiered = new CommissionPolicy
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Chính sách Hoa hồng Bậc thang theo KPI",
+                        PolicyType = "TargetTierBased",
+                        CalculationBasis = "TargetTierBased",
+                        CustomerType = "All",
+                        RatePercent = 3.0m,
+                        Version = 1,
+                        Description = "Áp dụng tỷ lệ hoa hồng theo mức độ hoàn thành KPI: <70%: 0%, 70-99%: 2%, 100-119%: 3%, >=120%: 5%.",
+                        TierRulesJson = "[{\"minAchievement\":0.0,\"maxAchievement\":69.99,\"rate\":0.0},{\"minAchievement\":70.0,\"maxAchievement\":99.99,\"rate\":2.0},{\"minAchievement\":100.0,\"maxAchievement\":119.99,\"rate\":3.0},{\"minAchievement\":120.0,\"maxAchievement\":9999.0,\"rate\":5.0}]",
+                        EffectiveFrom = new DateOnly(2026, 1, 1),
+                        IsActive = true
+                    };
+
+                    var policyNewCustomer = new CommissionPolicy
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Chính sách Khách hàng Mới (New Client Bonus)",
+                        PolicyType = "CustomerTypeBased",
+                        CalculationBasis = "CustomerTypeBased",
+                        CustomerType = "NewCustomer",
+                        RatePercent = 5.0m,
+                        Version = 1,
+                        Description = "Khuyến khích mở rộng thị trường: Hoa hồng 5% cho tất cả hợp đồng với khách hàng mới.",
+                        EffectiveFrom = new DateOnly(2026, 1, 1),
+                        IsActive = true
+                    };
+
+                    context.CommissionPolicies.AddRange(policyCollectedCash, policyTiered, policyNewCustomer);
+
+                    // Seed Bonus Policies
+                    var bonusTopPerformer = new BonusPolicy
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Thưởng Xuất sắc Tháng (Top Sales)",
+                        Type = "IndividualPerformance",
+                        Period = "Monthly",
+                        TargetThreshold = 150000000m,
+                        BonusAmount = 5000000m,
+                        Description = "Thưởng nóng 5 triệu VND cho cá nhân đạt doanh số trên 150 triệu trong tháng.",
+                        IsActive = true
+                    };
+
+                    var bonusNewClient = new BonusPolicy
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Thưởng Mốc Khách hàng Mới",
+                        Type = "NewCustomerAcquisition",
+                        Period = "Monthly",
+                        TargetThreshold = 3m,
+                        BonusAmount = 2000000m,
+                        Description = "Thưởng 2 triệu VND khi nhân viên mang về từ 3 khách hàng mới trở lên.",
+                        IsActive = true
+                    };
+
+                    context.BonusPolicies.AddRange(bonusTopPerformer, bonusNewClient);
+
+                    // Seed sample active Sales Employee KPI assignment
+                    var salesEmp = await context.Employees.FirstOrDefaultAsync(e => e.Position.Contains("Sales") || e.Position.Contains("Specialist"));
+                    if (salesEmp != null)
+                    {
+                        var now = DateTime.UtcNow;
+                        var kpiAssignment = new Kpi
+                        {
+                            Id = Guid.NewGuid(),
+                            EmployeeId = salesEmp.Id,
+                            DefinitionId = kpiDefs[0].Id,
+                            Scope = "Individual",
+                            PeriodMonth = now.Month,
+                            PeriodYear = now.Year,
+                            TargetRevenue = 200000000m,
+                            AchievedRevenue = 145000000m,
+                            TargetDealsWon = 5,
+                            AchievedDealsWon = 4,
+                            TargetNewLeads = 15,
+                            AchievedNewLeads = 12,
+                            TargetCalls = 40,
+                            AchievedCalls = 38,
+                            TargetMeetings = 10,
+                            AchievedMeetings = 9,
+                            WeightPercent = 100m,
+                            AchievementScore = 85.0m,
+                            Status = "Approved",
+                            ApprovalNotes = "Target approved by Sales Manager for current month."
+                        };
+                        context.Kpis.Add(kpiAssignment);
+                    }
+
+                    await context.SaveChangesAsync();
+                    logger.LogInformation("Phase 6 baseline performance and compensation data seeded successfully.");
+                }
             }
 
             logger.LogInformation("Database seeding completed successfully.");

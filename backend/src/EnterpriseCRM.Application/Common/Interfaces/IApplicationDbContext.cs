@@ -56,12 +56,16 @@ public interface IApplicationDbContext
     DbSet<ReconciliationItem> ReconciliationItems { get; }
 
     // Performance, Payroll & Automation
+    DbSet<KpiDefinition> KpiDefinitions { get; }
     DbSet<Kpi> Kpis { get; }
     DbSet<CommissionPolicy> CommissionPolicies { get; }
     DbSet<Commission> Commissions { get; }
+    DbSet<BonusPolicy> BonusPolicies { get; }
+    DbSet<BonusRecord> BonusRecords { get; }
     DbSet<PayrollPeriod> PayrollPeriods { get; }
     DbSet<PayrollRecord> PayrollRecords { get; }
     DbSet<PayrollAdjustment> PayrollAdjustments { get; }
+    DbSet<CompensationAuditLog> CompensationAuditLogs { get; }
     DbSet<WorkflowDefinition> WorkflowDefinitions { get; }
     DbSet<WorkflowExecution> WorkflowExecutions { get; }
     DbSet<Notification> Notifications { get; }

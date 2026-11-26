@@ -73,9 +73,30 @@ public static class Permissions
     public const string FinanceView = "finance:view";
     public const string FinanceExport = "finance:export";
     public const string CommissionsView = "commissions:view";
+    public const string CommissionsViewOwn = "commissions:view_own";
     public const string CommissionsManage = "commissions:manage";
+    public const string CommissionsCalculate = "commissions:calculate";
+    public const string CommissionsApprove = "commissions:approve";
+    public const string CommissionsAdjust = "commissions:adjust";
+
+    public const string BonusesView = "bonuses:view";
+    public const string BonusesManage = "bonuses:manage";
+    public const string BonusesApprove = "bonuses:approve";
+
     public const string PayrollView = "payroll:view";
+    public const string PayrollViewOwn = "payroll:view_own";
     public const string PayrollProcess = "payroll:process";
+    public const string PayrollApprove = "payroll:approve";
+    public const string PayrollFinalize = "payroll:finalize";
+
+    public const string KpisView = "kpis:view";
+    public const string KpisManage = "kpis:manage";
+    public const string KpisEvaluate = "kpis:evaluate";
+    public const string KpisApprove = "kpis:approve";
+
+    public const string PerformanceViewOwn = "performance:view_own";
+    public const string PerformanceViewTeam = "performance:view_team";
+    public const string PerformanceViewAll = "performance:view_all";
 
     // Organization & Employees Module
     public const string EmployeesView = "employees:view";
@@ -167,9 +188,30 @@ public static class Permissions
         (FinanceView, "Finance", "View financial reports and dashboard"),
         (FinanceExport, "Finance", "Export financial statements"),
         (CommissionsView, "Commissions", "View commission calculations"),
+        (CommissionsViewOwn, "Commissions", "View own commission records"),
         (CommissionsManage, "Commissions", "Configure commission policies"),
+        (CommissionsCalculate, "Commissions", "Run commission calculations"),
+        (CommissionsApprove, "Commissions", "Approve calculated commissions"),
+        (CommissionsAdjust, "Commissions", "Manually adjust commission amounts"),
+
+        (BonusesView, "Bonuses", "View bonus records and policies"),
+        (BonusesManage, "Bonuses", "Configure bonus policies and grant bonuses"),
+        (BonusesApprove, "Bonuses", "Approve bonuses"),
+
         (PayrollView, "Payroll", "View payroll periods and records"),
-        (PayrollProcess, "Payroll", "Process and finalize payroll runs"),
+        (PayrollViewOwn, "Payroll", "View own payroll records and payslips"),
+        (PayrollProcess, "Payroll", "Process and calculate payroll runs"),
+        (PayrollApprove, "Payroll", "Approve payroll records"),
+        (PayrollFinalize, "Payroll", "Finalize and lock payroll runs"),
+
+        (KpisView, "KPIs", "View KPI definitions and assignments"),
+        (KpisManage, "KPIs", "Configure and assign KPI targets"),
+        (KpisEvaluate, "KPIs", "Evaluate actual KPI performance"),
+        (KpisApprove, "KPIs", "Approve KPI evaluations"),
+
+        (PerformanceViewOwn, "Performance", "View own sales performance"),
+        (PerformanceViewTeam, "Performance", "View team sales performance"),
+        (PerformanceViewAll, "Performance", "View company-wide sales performance"),
 
         (EmployeesView, "Employees", "View employee directory"),
         (EmployeesCreate, "Employees", "Create new employees"),
